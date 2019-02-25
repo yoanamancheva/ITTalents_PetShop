@@ -45,18 +45,26 @@ public class UserDAO {
         ps.executeUpdate();
     }
 
-    public void getUserByUsername(String username) throws SQLException{
-        String sql = "SELECT * FROM users WHERE username = ?";
-        Connection con = DBManager.getInstance().getConnection();
 
-        PreparedStatement ps = con.prepareStatement(sql);
-        ps.setString(1, username);
-        ResultSet resultSet =  ps.executeQuery();
-
-        while (resultSet.next()) {
-            //todo
-        }
-
-
-    }
+    //not working
+//    public User getUserByUsername(String username) throws SQLException{
+//        String sql = "SELECT * FROM users WHERE username = ?";
+//        Connection con = DBManager.getInstance().getConnection();
+//
+//        PreparedStatement ps = con.prepareStatement(sql);
+//        ps.setString(1, username);
+//        ResultSet resultSet =  ps.executeQuery();
+//        User u = new User();
+//        if(!resultSet.wasNull() && resultSet.next()) {
+//            u.setId(resultSet.getLong("id"));
+//            u.setUsername(resultSet.getString("username"));
+//            u.setPassword(resultSet.getString("password"));
+//            u.setFirstName(resultSet.getString("first_name"));
+//            u.setLastName(resultSet.getString("last_name"));
+//            u.setEmail(resultSet.getString("email"));
+//            u.setAdmin(resultSet.getBoolean("administrator"));
+//        }
+//        return u;
+//
+//    }
 }
