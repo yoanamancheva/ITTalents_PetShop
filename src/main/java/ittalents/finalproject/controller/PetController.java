@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-public class PetController {
+public class PetController extends BaseController {
 
     @Autowired
     PetDao dao;

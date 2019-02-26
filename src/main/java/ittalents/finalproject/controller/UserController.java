@@ -1,5 +1,6 @@
 package ittalents.finalproject.controller;
 
+import ittalents.finalproject.exceptions.NotLoggedInException;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.daos.UserDAO;
 import ittalents.finalproject.model.repos.UserRepository;
@@ -22,7 +23,7 @@ public class UserController extends BaseController{
     private UserRepository userRepository;
 
     @PostMapping(value = "users/register")
-    public User addUser(@RequestBody User user) {
+    public User addUser(@RequestBody User user)  {
         userRepository.save(user);
         return user;
     }
@@ -46,8 +47,9 @@ public class UserController extends BaseController{
 
         //TODO validation
     @GetMapping(value = "/users/delete/{username}")
-    public void deleteUser (@PathVariable("username") String username) {
+    public void deleteUser (@PathVariable("username") String username, HttpSession session) throws NotLoggedInException {
         try {
+            super.validateLogin(session); //ili go nqma v bazata
             UserDAO.getInstance().deleteUser(username);
         } catch (SQLException e) {
             System.out.println("Problem with deleting the user - " + e.getMessage());
