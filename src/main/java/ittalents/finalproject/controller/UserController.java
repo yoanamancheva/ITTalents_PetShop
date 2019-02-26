@@ -4,6 +4,7 @@ import ittalents.finalproject.model.User;
 import ittalents.finalproject.model.daos.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.server.Session;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-public class UserController {
+public class UserController extends BaseController{
 
     @PostMapping(value = "/users/register")
     public void addUser(HttpServletRequest req, HttpServletResponse resp) throws Exception{
@@ -27,6 +28,9 @@ public class UserController {
         String first_name = req.getParameter("first_name");
         String last_name = req.getParameter("last_name");
         String email = req.getParameter("email");
+
+
+
 
 
         //TODO validation
@@ -92,5 +96,25 @@ public class UserController {
                         resultSet.getBoolean("administrator"));
         u.setId(resultSet.getLong("id"));
           return u;
+    }
+
+
+    @GetMapping(value = "/userById/{id}")
+    public Object findByCustomerId2(@PathVariable("id") long id){
+        String sql = "SELECT * FROM users WHERE id = ?";
+        User user = (User) jdbcTemplate.queryForObject(
+                sql, new Object[] { id },
+                new BeanPropertyRowMapper(User.class));
+
+        return user;
+    }
+
+    @GetMapping(value = "/userByUsername/{username}")
+    public User getByUsername(@PathVariable("username") String username){
+        String sql = "SELECT * FROM users WHERE username = ?";
+        User user = (User) jdbcTemplate.queryForObject(
+                sql, new Object[] { username },
+                new BeanPropertyRowMapper(User.class));
+        return user;
     }
 }
