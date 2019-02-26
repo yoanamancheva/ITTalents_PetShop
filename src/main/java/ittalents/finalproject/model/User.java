@@ -1,6 +1,7 @@
 package ittalents.finalproject.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import lombok.Setter;
 public class User {
     private long id;
     private String username;
+    @JsonIgnore
     private String password;
     private String firstName;
     private String lastName;
