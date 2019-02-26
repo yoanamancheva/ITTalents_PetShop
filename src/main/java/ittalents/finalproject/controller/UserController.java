@@ -47,7 +47,6 @@ public class UserController extends BaseController{
         //TODO validation
     @GetMapping(value = "/users/delete/{username}")
     public void deleteUser (@PathVariable("username") String username) {
-
         try {
             UserDAO.getInstance().deleteUser(username);
         } catch (SQLException e) {
@@ -103,7 +102,7 @@ public class UserController extends BaseController{
 
 
     @GetMapping(value = "/userById/{id}")
-    public Object findByCustomerId2(@PathVariable("id") long id){
+    public Object getUserById(@PathVariable("id") long id){
         String sql = "SELECT * FROM users WHERE id = ?";
         User user = (User) jdbcTemplate.queryForObject(
                 sql, new Object[] { id },

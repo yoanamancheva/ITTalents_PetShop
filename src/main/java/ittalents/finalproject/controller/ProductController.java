@@ -32,11 +32,24 @@ public class ProductController {
         }
     }
 
+
+    //working
+    @PostMapping(value = "/products/filter")
+    public Optional<Product> getProductByName(@RequestParam("name") String name) throws ProductNotFoundException{
+        Optional<Product> product = productRepository.findByName(name);
+        if(product.isPresent()) {
+            return product;
+        }
+        else {
+            throw new ProductNotFoundException("Product not found");
+        }
+    }
+
+
     //not working
-//    @GetMapping(value = "/products/filter")
-//    public Product getProductByName(@RequestParam("product_name") String product_name) {
-//        Product product = productRepository.findByProduct_name(product_name);
-//        return product;
+//    @GetMapping(value = "/products/byPrice")
+//    public List<Product> filterByPrice() {
+//        return productRepository.findAllByPrice();
 //    }
 
 
@@ -46,9 +59,10 @@ public class ProductController {
         return product;
     }
 
-    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "no product with that id")
+    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "No product with that id")
     private class ProductNotFoundException extends Exception {
-        public ProductNotFoundException(String fu) {
+        public ProductNotFoundException(String message) {
+            super(message);
         }
     }
 }
