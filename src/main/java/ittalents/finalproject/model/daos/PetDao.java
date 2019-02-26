@@ -1,7 +1,7 @@
 package ittalents.finalproject.model.daos;
 
 import ittalents.finalproject.model.DBManager;
-import ittalents.finalproject.model.pets.Pet;
+import ittalents.finalproject.model.pojos.pets.Pet;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;

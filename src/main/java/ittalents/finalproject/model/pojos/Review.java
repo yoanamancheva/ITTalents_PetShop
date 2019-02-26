@@ -1,4 +1,4 @@
-package ittalents.finalproject.model;
+package ittalents.finalproject.model.pojos;
 
 
 import lombok.Getter;
