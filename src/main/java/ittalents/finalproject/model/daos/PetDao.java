@@ -16,6 +16,7 @@ public class PetDao {
 
         String insertPet = "INSERT INTO pets(gender, breed, sub_breed, age, pet_desc, in_sale, price, quantity) VALUES(?, ?, ?, ?, ?, ?, ?, ?);";
         PreparedStatement ps = DBManager.getInstance().getConnection().prepareStatement(insertPet, Statement.RETURN_GENERATED_KEYS);
+
         ps.setString(1, pet.getGenderPet());
         ps.setString(2, pet.getBreed());
         ps.setString(3, pet.getSubBreed());
@@ -24,6 +25,7 @@ public class PetDao {
         ps.setBoolean(6, pet.isInSale());
         ps.setDouble(7, pet.getPrice());
         ps.setInt(8, pet.getQuantity());
+
         ps.executeUpdate();
     }
 }
