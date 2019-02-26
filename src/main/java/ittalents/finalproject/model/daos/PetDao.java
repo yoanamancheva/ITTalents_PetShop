@@ -1,16 +1,10 @@
 package ittalents.finalproject.model.daos;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import ittalents.finalproject.model.DBManager;
-import ittalents.finalproject.model.pets.Pet;
+import ittalents.finalproject.model.pojos.pets.Pet;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.sql.*;
-import java.util.Scanner;
 
 @Component
 public class PetDao {

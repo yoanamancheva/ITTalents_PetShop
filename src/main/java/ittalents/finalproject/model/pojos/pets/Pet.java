@@ -1,4 +1,4 @@
-package ittalents.finalproject.model.pets;
+package ittalents.finalproject.model.pojos.pets;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

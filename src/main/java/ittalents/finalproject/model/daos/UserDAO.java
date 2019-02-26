@@ -1,7 +1,7 @@
 package ittalents.finalproject.model.daos;
 
 import ittalents.finalproject.model.DBManager;
-import ittalents.finalproject.model.User;
+import ittalents.finalproject.model.pojos.User;
 
 import java.sql.*;
 

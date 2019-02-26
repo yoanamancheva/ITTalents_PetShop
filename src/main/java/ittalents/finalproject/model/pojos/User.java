@@ -1,4 +1,4 @@
-package ittalents.finalproject.model;
+package ittalents.finalproject.model.pojos;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -6,9 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
 @NoArgsConstructor
 @Setter
 @Getter
+
 public class User {
     private long id;
     private String username;

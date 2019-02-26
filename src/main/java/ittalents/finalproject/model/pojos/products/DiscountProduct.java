@@ -1,4 +1,4 @@
-package ittalents.finalproject.model.products;
+package ittalents.finalproject.model.pojos.products;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

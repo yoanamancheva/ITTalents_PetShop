@@ -2,18 +2,14 @@ package ittalents.finalproject.controller;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import ittalents.finalproject.model.DBManager;
 import ittalents.finalproject.model.daos.PetDao;
-import ittalents.finalproject.model.pets.Pet;
+import ittalents.finalproject.model.pojos.pets.Pet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Scanner;
 
 @RestController
