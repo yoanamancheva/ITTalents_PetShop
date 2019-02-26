@@ -1,8 +1,5 @@
 package ittalents.finalproject.controller;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import ittalents.finalproject.model.DBManager;
 import ittalents.finalproject.model.daos.PetDao;
 import ittalents.finalproject.model.pets.Pet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Scanner;
 
 @RestController
 public class PetController {
@@ -25,24 +18,25 @@ public class PetController {
     @PostMapping(value = "/pets/add")
     public void add(HttpServletRequest req, HttpServletResponse resp){
         try {
-            StringBuilder text = new StringBuilder();
-            Scanner sc = new Scanner(req.getReader());
-            while(sc.hasNextLine()){
-                text.append(sc.nextLine());
-            }
-            String request = text.toString();
-            JsonObject json = new JsonParser().parse(request).getAsJsonObject();
-            Pet p = new Pet(json.get("genderPet").toString(),
-                    json.get("breed").toString(),
-                    json.get("age").getAsInt(),
-                    json.get("subBreed").getAsString(),
-                    json.get("description").getAsString(),
-                    json.get("inSale").getAsBoolean(),
-                    json.get("age").getAsDouble(),
-                    json.get("quantity").getAsInt());
+//            StringBuilder text = new StringBuilder();
+//            Scanner sc = new Scanner(req.getReader());
+//            while(sc.hasNextLine()){
+//                text.append(sc.nextLine());
+//            }
+//            String request = text.toString();
+//            JsonObject json = new JsonParser().parse(request).getAsJsonObject();
+            String gender = req.getParameter("genderPet");
+            int age = Integer.getInteger(req.getParameter("age")).intValue();
+            String breed = req.getParameter("breed");
+            String subBreed = req.getParameter("subBreed");
+            String description = req.getParameter("description");
+            Boolean inSale = Boolean.getBoolean(req.getParameter("inSale"));
+            Integer quantity = Integer.getInteger(req.getParameter("quantity"));
+            Double price = Double.valueOf(req.getParameter("price"));
+            Pet p = new Pet(gender, breed, age, subBreed, description, inSale, price, quantity);
             if(validatePet(p)){
                 dao.addPet(p);
-                resp.getWriter().append("The pet with id " + p.getId() + " was successfuly added");
+                resp.getWriter().append("The pet with id " + p.getId() + " was successfully added");
             }
             else{
                 resp.setStatus(400);
@@ -54,7 +48,7 @@ public class PetController {
     }
 
     public static boolean validatePet(Pet pet){
-        //TODO more validations
+        //TODO more validations for user
         if(pet.getGenderPet() == null || pet.getAge() == 0 || pet.getBreed() == null || pet.getDescription() == null || pet.getPrice() == 0 || pet.getSubBreed() == null || pet.getQuantity() == 0){
             return false;
         }
