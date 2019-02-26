@@ -38,7 +38,7 @@ public class UserController extends BaseController{
         UserDAO.getInstance().addUser(user);
         resp.getWriter().append("Successfully registered.");
 
-        }
+    }
 
 
         //TODO validation
