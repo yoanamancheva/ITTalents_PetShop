@@ -2,6 +2,7 @@ package ittalents.finalproject.controller;
 
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.daos.UserDAO;
+import ittalents.finalproject.model.repos.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,25 +18,30 @@ import java.util.List;
 @RestController
 public class UserController extends BaseController{
 
-    @PostMapping(value = "/users/register")
-    public void addUser(HttpServletRequest req, HttpServletResponse resp) throws Exception{
-        String username = req.getParameter("username");
-        String password = req.getParameter("password");
-        String password2 = req.getParameter("password2");
-        String first_name = req.getParameter("first_name");
-        String last_name = req.getParameter("last_name");
-        String email = req.getParameter("email");
+    @Autowired
+    private UserRepository userRepository;
 
-
-
-
-
-        //TODO validation
-        User user = new User(username, password, first_name, last_name, email, false);
-        UserDAO.getInstance().addUser(user);
-        resp.getWriter().append("Successfully registered.");
-
+    @PostMapping(value = "users/register")
+    public User addUser(@RequestBody User user) {
+        userRepository.save(user);
+        return user;
     }
+    //working
+//    @PostMapping(value = "/users/register")
+//    public void addUser(HttpServletRequest req, HttpServletResponse resp) throws Exception{
+//        String username = req.getParameter("username");
+//        String password = req.getParameter("password");
+//        String password2 = req.getParameter("password2");
+//        String first_name = req.getParameter("first_name");
+//        String last_name = req.getParameter("last_name");
+//        String email = req.getParameter("email");
+//
+//
+//        //TODO validation
+//        User user = new User(username, password, first_name, last_name, email, false);
+//        UserDAO.getInstance().addUser(user);
+//        resp.getWriter().append("Successfully registered.");
+//    }
 
 
         //TODO validation

@@ -1,10 +1,6 @@
 package ittalents.finalproject.controller;
 
-<<<<<<< HEAD
-=======
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
->>>>>>> a429fafc6a69c4b070fbaa586368ec0db3e2ed6e
+
 import ittalents.finalproject.model.daos.PetDao;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-<<<<<<< HEAD
-=======
-import java.util.Scanner;
->>>>>>> a429fafc6a69c4b070fbaa586368ec0db3e2ed6e
 
 @RestController
 public class PetController {

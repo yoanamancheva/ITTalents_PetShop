@@ -1,6 +1,7 @@
 package ittalents.finalproject.model.pojos.products;
 
 
+import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,24 +16,25 @@ import javax.persistence.*;
 public class Product {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String product_name;
+    private String name;
     private String category;
     private double price;
     private int quantity;
     private String manifacturer;
     private String description;
-    private String photo_path;
+    private String photo;
+
 
     public Product(long id, String name, String category, double price, int quantity, String manufacturer, String description, String photo) {
         this.id = id;
-        this.product_name = name;
+        this.name = name;
         this.category = category;
         this.price = price;
         this.quantity = quantity;
         this.manifacturer = manufacturer;
         this.description = description;
-        this.photo_path = photo;
+        this.photo = photo;
     }
 }
