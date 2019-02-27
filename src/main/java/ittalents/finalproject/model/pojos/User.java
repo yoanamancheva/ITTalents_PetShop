@@ -20,6 +20,8 @@ public class User {
     private long id;
     private String username;
     private String password;
+    @Transient
+    private String password2;
     private String firstName;
     private String lastName;
     private String email;

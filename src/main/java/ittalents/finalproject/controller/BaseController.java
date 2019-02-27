@@ -14,6 +14,13 @@ import java.time.LocalDateTime;
 @RestController
 public abstract class BaseController {
 
+    @ExceptionHandler({InvalidInputException.class})
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ErrorMsg invalidInput(Exception e) {
+        return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
+    }
+
+
     @ExceptionHandler({ProductNotFoundException.class})
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     public ErrorMsg productNotFound(Exception e) {
@@ -61,7 +68,7 @@ public abstract class BaseController {
     protected void validateProductInput(String name, String category, double price, int quantity, String manifacturer, String description,
                                 String photo)throws InvalidInputException {
         if(name == null || category == null || price < 0 || quantity < 0 || manifacturer == null || description == null || photo == null){
-            throw new InvalidInputException();
+            throw new InvalidInputException("The input for the product is not valid.");
         }
     }
 
@@ -69,7 +76,7 @@ public abstract class BaseController {
                                          String subBreed, String description, Boolean inSale, int quantity,
                                          double price)throws InvalidInputException{
         if(gender == null || age < 0 || breed == null || subBreed == null || description == null || quantity < 1 || price < 0){
-            throw new InvalidInputException();
+            throw new InvalidInputException("The input for the pet is not valid.");
         }
     }
 }

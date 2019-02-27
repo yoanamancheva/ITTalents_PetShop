@@ -1,10 +1,14 @@
 package ittalents.finalproject.controller;
 
+import ittalents.finalproject.exceptions.BaseException;
+import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.NotLoggedInException;
+import ittalents.finalproject.exceptions.ProductOutOfStockException;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.daos.UserDAO;
 import ittalents.finalproject.model.repos.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +19,7 @@ import javax.servlet.http.HttpSession;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class UserController extends BaseController{
@@ -23,10 +28,69 @@ public class UserController extends BaseController{
     private UserRepository userRepository;
 
     @PostMapping(value = "users/register")
-    public User addUser(@RequestBody User user)  {
-        userRepository.save(user);
-        return user;
+    public User addUser(@RequestBody User user, HttpSession session) throws BaseException{
+        String newUsername = user.getUsername();
+        String newEmail = user.getEmail();
+        validateNullInput(user);
+        if ( getUserByName(newUsername) != null ) {
+            throw new InvalidInputException("This username is already used by another user.");
+        }
+        else if( getUserByEmail(newEmail) != null) {
+            throw new InvalidInputException("This email is already user by another user.");
+        }
+        else if(user.getPassword().length() < 3 ) {
+            throw new InvalidInputException("The password should be more than 3 symbols");
+        }
+        else if (!user.getPassword().equals(user.getPassword2()) ) {
+            throw new InvalidInputException("The passwords don't match.");
+        }
+        else if (!user.getEmail().matches("^([a-zA-Z0-9_\\-.]+)@([a-zA-Z0-9_\\-.]+)\\.([a-zA-Z]{2,5})$")) {
+            throw new InvalidInputException("The email is not valid");
+        }
+        else {
+            userRepository.save(user);
+            session.setAttribute("logged", user);
+            return user;
+        }
     }
+
+    //to fix null pointer
+    @PostMapping(value = "users/login")
+    public Object login(@RequestBody User user, HttpSession session) throws BaseException{
+        String pendingUsername = user.getUsername();
+        String pendingPassword = user.getPassword();
+        if(getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
+            getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
+            session.setAttribute("logged", getUserByName(pendingUsername));
+            return "You logged successfully.";
+        }
+        throw new InvalidInputException("Wrong username/password");
+    }
+
+    private void validateNullInput(User user) throws BaseException {
+        if(user.getUsername() == null) {
+            throw new InvalidInputException("The username should not be empty");
+        }
+        if(user.getFirstName() == null) {
+            throw new InvalidInputException("The first name should not be empty");
+        }
+        if(user.getLastName() == null) {
+            throw new InvalidInputException("The last name should not be empty");
+        }
+    }
+
+    private User getUserByName(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+
+
+
+
     //working
 //    @PostMapping(value = "/users/register")
 //    public void addUser(HttpServletRequest req, HttpServletResponse resp) throws Exception{
@@ -113,12 +177,13 @@ public class UserController extends BaseController{
         return user;
     }
 
-    @GetMapping(value = "/userByUsername/{username}")
-    public User getByUsername(@PathVariable("username") String username){
-        String sql = "SELECT * FROM users WHERE username = ?";
-        User user = (User) jdbcTemplate.queryForObject(
-                sql, new Object[] { username },
-                new BeanPropertyRowMapper(User.class));
-        return user;
-    }
+    //working
+//    @GetMapping(value = "/userByUsername/{username}")
+//    public User getByUsername(@PathVariable("username") String username){
+//        String sql = "SELECT * FROM users WHERE username = ?";
+//        User user = (User) jdbcTemplate.queryForObject(
+//                sql, new Object[] { username },
+//                new BeanPropertyRowMapper(User.class));
+//        return user;
+//    }
 }
