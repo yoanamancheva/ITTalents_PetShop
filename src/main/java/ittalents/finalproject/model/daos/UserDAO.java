@@ -15,6 +15,7 @@ public class UserDAO {
     }
 
 
+    //add user via db manager
     public void addUser(User user) throws SQLException {
         String sql = "INSERT INTO users (username, password, first_name, last_name, email, administrator) values (?,?,?,?,?,?)";
 
@@ -36,6 +37,8 @@ public class UserDAO {
     }
 
 
+
+    //delete user via db manager
     public void deleteUser(String username) throws SQLException {
         String sql = "DELETE FROM users WHERE username = ?";
 
