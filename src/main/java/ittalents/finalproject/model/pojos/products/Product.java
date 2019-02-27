@@ -1,7 +1,6 @@
 package ittalents.finalproject.model.pojos.products;
 
 
-import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

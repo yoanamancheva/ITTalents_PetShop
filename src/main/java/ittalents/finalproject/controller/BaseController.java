@@ -13,16 +13,10 @@ import java.time.LocalDateTime;
 @RestController
 public abstract class BaseController {
 
-    @ExceptionHandler({NotLoggedInException.class})
+    @ExceptionHandler({NotLoggedInException.class, NotLoggedAdminException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ErrorMsg notLoggedHandler(){
-        return new ErrorMsg(new NotLoggedInException().getMessage(), LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value());
-    }
-
-    @ExceptionHandler({NotLoggedInException.class})
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ErrorMsg notLoggedAdminHandler(){
-        return new ErrorMsg(new NotLoggedAdminException().getMessage(), LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value());
+    public ErrorMsg notLoggedHandler(Exception e){
+        return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value());
     }
 
     @ExceptionHandler({BaseException.class})
@@ -50,15 +44,19 @@ public abstract class BaseController {
             throw new NotLoggedAdminException();
         }
     }
-    //TODO validates for product and pet
 
-    //not sure are these two needed ?!
-    protected void validateProduct(HttpSession session)throws NotLoggedInException, NotFoundProductException {
-
+    protected void validateProductInput(String name, String category, double price, int quantity, String manifacturer, String description,
+                                String photo)throws InvalidInputException {
+        if(name == null || category == null || price < 0 || quantity < 0 || manifacturer == null || description == null || photo == null){
+            throw new InvalidInputException();
+        }
     }
 
-    protected void validatePet(HttpSession session) throws NotLoggedAdminException, NotFoundPetException {
-
+    public static void validatePetInput(String gender, int age, String breed,
+                                         String subBreed, String description, Boolean inSale, int quantity,
+                                         double price)throws InvalidInputException{
+        if(gender == null || age < 0 || breed == null || subBreed == null || description == null || quantity < 1 || price < 0){
+            throw new InvalidInputException();
+        }
     }
-
 }
