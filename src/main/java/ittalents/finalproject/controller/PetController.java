@@ -1,52 +1,38 @@
 package ittalents.finalproject.controller;
 
 import ittalents.finalproject.exceptions.InvalidInputException;
-import ittalents.finalproject.exceptions.PetNotFoundException;
 import ittalents.finalproject.model.daos.PetDao;
 import ittalents.finalproject.model.pojos.pets.Pet;
-import ittalents.finalproject.model.pojos.products.Product;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @RestController
 public class PetController extends BaseController {
 
     @Autowired
-    PetDao dao;
+    private PetDao dao;
 
-    //not working
     @PostMapping(value = "/pets/add")
-    public void add(HttpServletRequest req, HttpServletResponse resp)throws InvalidInputException {
-        try {
-            String gender = req.getParameter("genderPet");
-            int age = Integer.getInteger(req.getParameter("age")).intValue();
-            String breed = req.getParameter("breed");
-            String subBreed = req.getParameter("subBreed");
-            String description = req.getParameter("description");
-            Boolean inSale = Boolean.getBoolean(req.getParameter("inSale"));
-            Integer quantity = Integer.getInteger(req.getParameter("quantity"));
-            Double price = Double.valueOf(req.getParameter("price"));
-            super.validatePetInput(gender, age, breed, subBreed, description, inSale, quantity, price);
-            Pet p = new Pet(gender, breed, age, subBreed, description, inSale, price, quantity);
-            dao.addPet(p);
-            resp.getWriter().append("The pet with id " + p.getId() + " was successfully added");
-        } catch (Exception e) {
-            System.out.println("OPSI, " + e.getClass().getName() + " " + e.getMessage());
+    public @ResponseBody String add(@RequestBody Pet pet, HttpSession session)throws Exception {
+
+        if(pet.getGender() == null || pet.getAge() < 0 || pet.getBreed() == null || pet.getSubBreed() == null ||
+                pet.getPetDesc() == null || pet.getQuantity() < 1 || pet.getPrice() < 0){
+            throw new InvalidInputException();
         }
+        super.validateAdmin(session);
+        dao.addPet(pet);
+        System.out.println(pet.toString());
+        return "The pet with id " + pet.getId() + " was successfully added";
     }
 
-//    @GetMapping(value = "/allProducts")
-//    public List<Pet> getAllProducts(){
-//
-//    }
-//
+    @GetMapping(value = "/pets")
+    public @ResponseBody List<Pet> getAll(){
+        return dao.getAll();
+    }
+
 //    @GetMapping(value = "/pets/{id}")
 //    public Pet getById(){
 //
