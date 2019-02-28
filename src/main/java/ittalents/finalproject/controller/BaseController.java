@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 @RestController
 public abstract class BaseController {
 
+    public static final String LOGGED_USER = "loggedUser";
+
     @ExceptionHandler({InvalidInputException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ErrorMsg invalidInput(Exception e) {
@@ -40,26 +42,26 @@ public abstract class BaseController {
                 LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
     }
 
-    @ExceptionHandler({Exception.class})
-    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorMsg allExceptionHandler(){
-        return new ErrorMsg(new Exception("Sorry, the server is temporary down. ").getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
-    }
+//    @ExceptionHandler({Exception.class})
+//    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+//    public ErrorMsg allExceptionHandler(){
+//        return new ErrorMsg(new Exception("Sorry, the server is temporary down. ").getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+//    }
 
 
     protected void validateLogin(HttpSession session) throws NotLoggedInException{
-        if(session.getAttribute("loggedUser") == null) {
+        if(session.getAttribute(LOGGED_USER) == null) {
             throw new NotLoggedInException();
         }
     }
 
     protected void validateLoginAdmin(HttpSession session)throws BaseException {
-        if(session.getAttribute("loggedUser") == null){
+        if(session.getAttribute(LOGGED_USER) == null){
             throw new NotLoggedInException();
         }
         else {
-            User logged = (User)(session.getAttribute("loggedUser"));
-            if(!logged.isAdministrator()) {
+            User user = (User)(session.getAttribute(LOGGED_USER));
+            if(!user.isAdministrator()) {
                 throw new NotLoggedAdminException("Sorry, you are not logged as admin.");
             }
         }
