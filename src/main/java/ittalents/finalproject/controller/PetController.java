@@ -1,5 +1,6 @@
 package ittalents.finalproject.controller;
 
+import ittalents.finalproject.exceptions.BaseException;
 import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.model.daos.PetDao;
 import ittalents.finalproject.model.pojos.pets.Pet;
@@ -16,13 +17,13 @@ public class PetController extends BaseController {
     private PetDao dao;
 
     @PostMapping(value = "/pets/add")
-    public @ResponseBody String add(@RequestBody Pet pet, HttpSession session)throws Exception {
+    public @ResponseBody String add(@RequestBody Pet pet, HttpSession session) throws BaseException {
 
         if(pet.getGender() == null || pet.getAge() < 0 || pet.getBreed() == null || pet.getSubBreed() == null ||
                 pet.getPetDesc() == null || pet.getQuantity() < 1 || pet.getPrice() < 0){
             throw new InvalidInputException();
         }
-        super.validateAdmin(session);
+        super.validateLoginAdmin(session);
         dao.addPet(pet);
         System.out.println(pet.toString());
         return "The pet with id " + pet.getId() + " was successfully added";
