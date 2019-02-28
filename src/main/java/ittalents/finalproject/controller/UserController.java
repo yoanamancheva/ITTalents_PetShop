@@ -24,6 +24,16 @@ import java.util.Optional;
 @RestController
 public class UserController extends BaseController{
 
+
+
+
+
+
+
+
+
+
+
     @Autowired
     private UserRepository userRepository;
 
@@ -62,10 +72,27 @@ public class UserController extends BaseController{
         if(getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
             getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
             session.setAttribute("logged", getUserByName(pendingUsername));
+            System.out.println(session.getAttribute("logged"));
             return "You logged successfully.";
         }
         throw new InvalidInputException("Wrong username/password");
     }
+
+    // testing
+//        @PostMapping(value = "users/login/{username}/{password}")
+//    public Object login(@PathVariable ("username") String username, @PathVariable ("password") String password, HttpSession session) throws BaseException{
+//        String pendingUsername =username;
+//        String pendingPassword = password;
+//        if(getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
+//            getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
+//            session.setAttribute("logged", getUserByName(pendingUsername));
+//            System.out.println(session.getAttribute("logged"));
+//            return "You logged successfully.";
+//        }
+//        throw new InvalidInputException("Wrong username/password");
+//    }
+
+
 
     private void validateNullInput(User user) throws BaseException {
         if(user.getUsername() == null) {
@@ -148,34 +175,37 @@ public class UserController extends BaseController{
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @GetMapping(value = "/users")
-    public List<User> getAll() {
-        List<User> users = jdbcTemplate.query("SELECT id, username, password, first_name, last_name, email, administrator FROM users", (resultSet, i) -> toUser(resultSet));
-        return users;
-    }
+    //working, not used
+//    @GetMapping(value = "/users")
+//    public List<User> getAll() {
+//        List<User> users = jdbcTemplate.query("SELECT id, username, password, first_name, last_name, email, administrator FROM users", (resultSet, i) -> toUser(resultSet));
+//        return users;
+//    }
 
 
-    private User toUser(ResultSet resultSet) throws SQLException{
-        User u = new User(resultSet.getString("username"),
-                        resultSet.getString("password"),
-                        resultSet.getString("first_name"),
-                        resultSet.getString("last_name"),
-                        resultSet.getString("email"),
-                        resultSet.getBoolean("administrator"));
-        u.setId(resultSet.getLong("id"));
-          return u;
-    }
+    //working not
+//    private User toUser(ResultSet resultSet) throws SQLException{
+//        User u = new User(resultSet.getString("username"),
+//                        resultSet.getString("password"),
+//                        resultSet.getString("first_name"),
+//                        resultSet.getString("last_name"),
+//                        resultSet.getString("email"),
+//                        resultSet.getBoolean("administrator"));
+//        u.setId(resultSet.getLong("id"));
+//          return u;
+//    }
 
 
-    @GetMapping(value = "/userById/{id}")
-    public Object getUserById(@PathVariable("id") long id){
-        String sql = "SELECT * FROM users WHERE id = ?";
-        User user = (User) jdbcTemplate.queryForObject(
-                sql, new Object[] { id },
-                new BeanPropertyRowMapper(User.class));
-
-        return user;
-    }
+    //working, not used
+//    @GetMapping(value = "/userById/{id}")
+//    public Object getUserById(@PathVariable("id") long id){
+//        String sql = "SELECT * FROM users WHERE id = ?";
+//        User user = (User) jdbcTemplate.queryForObject(
+//                sql, new Object[] { id },
+//                new BeanPropertyRowMapper(User.class));
+//
+//        return user;
+//    }
 
     //working
 //    @GetMapping(value = "/userByUsername/{username}")
