@@ -2,6 +2,7 @@ package ittalents.finalproject.controller;
 
 import com.fasterxml.jackson.databind.ser.Serializers;
 import ittalents.finalproject.exceptions.BaseException;
+import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.NotLoggedInException;
 import ittalents.finalproject.exceptions.ProductNotFoundException;
 import ittalents.finalproject.model.pojos.products.Product;
@@ -30,7 +31,8 @@ public class ProductController extends BaseController {
 
 
     @GetMapping(value = "/products/{id}")
-    public Product getById(@PathVariable("id") long id) throws BaseException{
+    public Product getById(@PathVariable("id") long id, HttpSession session) throws BaseException{
+        validateLoginAdmin(session);
         Optional<Product> obj = productRepository.findById(id);
         if(obj.isPresent()) {
             return obj.get();
@@ -41,9 +43,8 @@ public class ProductController extends BaseController {
     }
 
 
-    //working
     @PostMapping(value = "/products/filter")
-    public Optional<Product> getProductByName(@RequestParam("name") String name) throws BaseException{
+    public Optional<Product> showProductByName(@RequestParam("name") String name) throws BaseException{
         Optional<Product> product = productRepository.findByName(name);
         if(product.isPresent()) {
             return product;
@@ -54,20 +55,43 @@ public class ProductController extends BaseController {
     }
 
 
-
-    //working
-    //to add exception when there arent any
-
-    @PostMapping(value = "/products/filterByPriceAndCategory")
-    public List<Product> filterByPrice(@RequestParam("category") String category) {
-        return productRepository.findAllByCategoryOrderByPrice(category);
+    @PostMapping(value = "/products/filter/category")
+    public List<Product> filterByPrice(@RequestParam("category") String category) throws BaseException {
+        List<Product> products = productRepository.findAllByCategoryOrderByPrice(category);
+        if(products.isEmpty()) {
+            throw new ProductNotFoundException("No products found out of that category.");
+        }
+        return products;
     }
 
 
-    @PostMapping(value = "/products")
-    public Product save(@RequestBody Product product) {
+    @PostMapping(value = "/products/add")
+    public Product save(@RequestBody Product product, HttpSession session) throws BaseException {
+        validateLoginAdmin(session);
+        validateProductInput(product);
         productRepository.save(product);
         return product;
     }
 
+    private void validateProductInput(Product product)throws BaseException {
+        if(product.getName() == null || product.getCategory() == null || product.getPrice() < 0
+                || product.getQuantity() < 0 || product.getManifacturer() == null
+                || product.getDescription() == null || product.getPhoto() == null){
+            throw new InvalidInputException("Invalid input for the product input.");
+        }
+        if (getProductByName(product.getName()) != null) {
+            throw new InvalidInputException("Product with that name already exists.");
+        }
+
+    }
+
+    private Product getProductByName(String name) {
+        Optional<Product> product = productRepository.findByName(name);
+        if (product.isPresent()) {
+            return product.get();
+        }
+        else {
+            return null;
+        }
+    }
 }

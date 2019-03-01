@@ -1,8 +1,8 @@
 package ittalents.finalproject.exceptions;
 
 public class NotLoggedAdminException extends BaseException {
-    public NotLoggedAdminException(String message)
+    public NotLoggedAdminException()
     {
-        super(message);
+        super("You are not logged as admin.");
     }
 }

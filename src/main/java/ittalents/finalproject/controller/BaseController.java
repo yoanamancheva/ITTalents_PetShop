@@ -3,6 +3,7 @@ package ittalents.finalproject.controller;
 import ittalents.finalproject.exceptions.*;
 import ittalents.finalproject.model.pojos.ErrorMsg;
 
+import ittalents.finalproject.model.pojos.products.Product;
 import org.springframework.http.HttpRequest;
 import ittalents.finalproject.model.pojos.User;
 import org.springframework.http.HttpStatus;
@@ -66,15 +67,8 @@ public abstract class BaseController {
         else {
             User user = (User)(session.getAttribute(LOGGED_USER));
             if(!user.isAdministrator()) {
-                throw new NotLoggedAdminException("Sorry, you are not logged as admin.");
+                throw new NotLoggedAdminException();
             }
-        }
-    }
-
-    protected void validateProductInput(String name, String category, double price, int quantity, String manifacturer, String description,
-                                String photo)throws InvalidInputException {
-        if(name == null || category == null || price < 0 || quantity < 0 || manifacturer == null || description == null || photo == null){
-            throw new InvalidInputException("Invalid input for the product input.");
         }
     }
 
