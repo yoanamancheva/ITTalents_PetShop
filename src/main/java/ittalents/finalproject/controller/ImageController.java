@@ -7,7 +7,6 @@ import ittalents.finalproject.model.pojos.dto.ImageUploadDto;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.web.bind.annotation.*;
-import sun.misc.BASE64Decoder;
 
 import javax.servlet.http.HttpSession;
 import java.awt.*;
