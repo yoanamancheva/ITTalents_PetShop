@@ -35,6 +35,6 @@ public class ImageController extends BaseController {
     public @ResponseBody byte[] downloadImage(@PathVariable String img) throws FileNotFoundException {
           File newFile = new File(IMAGE_DIR + img);
           FileInputStream fis = new FileInputStream(newFile);
-        return fis.();//not working
+        return IOUtils.();//not working
     }
 }
