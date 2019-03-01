@@ -22,23 +22,39 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping(value = "users", produces = "application/json")
 public class UserController extends BaseController{
-
-
-
-
-
-
-
-
-
-
 
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping(value = "users/register")
+    @PostMapping(value = "register")
     public User addUser(@RequestBody User user, HttpSession session) throws BaseException{
+        validateUserInput(user);
+        userRepository.save(user);
+        session.setAttribute(LOGGED_USER, user);
+        return user;
+    }
+
+    @PostMapping(value = "register/admin")
+    public User addAdmin(@RequestBody User user , HttpSession session) throws BaseException{
+        validateUserInput(user);
+        user.setAdministrator(true);
+        session.setAttribute(LOGGED_USER, user);
+        userRepository.save(user);
+        return user;
+    }
+
+    @GetMapping(value = "logout")
+    public Object logout(HttpSession session) {
+        if(session.getAttribute(LOGGED_USER) != null) {
+            session.removeAttribute(LOGGED_USER);
+            return "You logged out successfully";
+        }
+        return "You are not logged in";
+    }
+
+    private void validateUserInput( User user) throws BaseException{
         String newUsername = user.getUsername();
         String newEmail = user.getEmail();
         validateNullInput(user);
@@ -57,41 +73,22 @@ public class UserController extends BaseController{
         else if (!user.getEmail().matches("^([a-zA-Z0-9_\\-.]+)@([a-zA-Z0-9_\\-.]+)\\.([a-zA-Z]{2,5})$")) {
             throw new InvalidInputException("The email is not valid");
         }
-        else {
-            userRepository.save(user);
-            session.setAttribute("logged", user);
-            return user;
-        }
     }
 
+
     //to fix null pointer
-    @PostMapping(value = "users/login")
+    @PostMapping(value = "login")
     public Object login(@RequestBody User user, HttpSession session) throws BaseException{
         String pendingUsername = user.getUsername();
         String pendingPassword = user.getPassword();
         if(getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
             getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
-            session.setAttribute("logged", getUserByName(pendingUsername));
-            System.out.println(session.getAttribute("logged"));
+            session.setAttribute(LOGGED_USER, getUserByName(pendingUsername));
+            System.out.println(session.getAttribute(LOGGED_USER));
             return "You logged successfully.";
         }
         throw new InvalidInputException("Wrong username/password");
     }
-
-    // testing
-//        @PostMapping(value = "users/login/{username}/{password}")
-//    public Object login(@PathVariable ("username") String username, @PathVariable ("password") String password, HttpSession session) throws BaseException{
-//        String pendingUsername =username;
-//        String pendingPassword = password;
-//        if(getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
-//            getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
-//            session.setAttribute("logged", getUserByName(pendingUsername));
-//            System.out.println(session.getAttribute("logged"));
-//            return "You logged successfully.";
-//        }
-//        throw new InvalidInputException("Wrong username/password");
-//    }
-
 
 
     private void validateNullInput(User user) throws BaseException {
@@ -137,7 +134,7 @@ public class UserController extends BaseController{
 
 
         //TODO validation
-    @GetMapping(value = "/users/delete/{username}")
+    @GetMapping(value = "delete/{username}")
     public void deleteUser (@PathVariable("username") String username, HttpSession session) throws NotLoggedInException {
         try {
             super.validateLogin(session); //ili go nqma v bazata
@@ -163,13 +160,6 @@ public class UserController extends BaseController{
 //        }
 //        return "opa";
 //    }
-
-    public static boolean isLogged(HttpSession session) {
-        if(!session.isNew() && session.getAttribute("username") != null){
-            return true;
-        }
-        return false;
-    }
 
 
     @Autowired
