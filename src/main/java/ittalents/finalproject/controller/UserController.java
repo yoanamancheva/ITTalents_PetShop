@@ -3,15 +3,18 @@ package ittalents.finalproject.controller;
 import ittalents.finalproject.exceptions.BaseException;
 import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.NotLoggedInException;
+import ittalents.finalproject.model.pojos.ErrorMsg;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.dao.UserDAO;
 import ittalents.finalproject.model.repos.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping(value = "users", produces = "application/json")
@@ -41,15 +44,18 @@ public class UserController extends BaseController{
     public Object logout(HttpSession session) {
         if(session.getAttribute(LOGGED_USER) != null) {
             session.removeAttribute(LOGGED_USER);
-            return "You logged out successfully";
+            return new ErrorMsg("You logged out successfully", LocalDateTime.now(), HttpStatus.OK.value());
         }
-        return "You are not logged in";
+        return new ErrorMsg("You are not logged in", LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
     }
 
     private void validateUserInput( User user) throws BaseException{
         String newUsername = user.getUsername();
         String newEmail = user.getEmail();
+        newEmail = newEmail.trim();
         validateNullInput(user);
+        user.setPassword(user.getPassword().trim());
+        user.setPassword2(user.getPassword2().trim());
         if ( getUserByName(newUsername) != null ) {
             throw new InvalidInputException("This username is already used by another user.");
         }
@@ -68,16 +74,20 @@ public class UserController extends BaseController{
     }
 
 
-    //to fix null pointer
     @PostMapping(value = "login")
     public Object login(@RequestBody User user, HttpSession session) throws BaseException{
         String pendingUsername = user.getUsername();
         String pendingPassword = user.getPassword();
+        if(pendingPassword == null || pendingUsername == null) {
+            throw new InvalidInputException("Username/password should not be empty.");
+        }
+        if(session.getAttribute(LOGGED_USER) != null) {
+            throw new InvalidInputException("You are already logged in.");
+        }
         if(getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
             getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
             session.setAttribute(LOGGED_USER, getUserByName(pendingUsername));
-            System.out.println(session.getAttribute(LOGGED_USER));
-            return "You logged successfully.";
+            return new ErrorMsg("You logged successfully.", LocalDateTime.now(), 200);
         }
         throw new InvalidInputException("Wrong username/password");
     }
@@ -127,13 +137,11 @@ public class UserController extends BaseController{
 
         //TODO validation
     @GetMapping(value = "delete/{username}")
-    public void deleteUser (@PathVariable("username") String username, HttpSession session) throws NotLoggedInException {
-        try {
-            super.validateLogin(session); //ili go nqma v bazata
-            UserDAO.getInstance().deleteUser(username);
-        } catch (SQLException e) {
-            System.out.println("Problem with deleting the user - " + e.getMessage());
-        }
+    public Object deleteUser (@PathVariable("username") String username, HttpSession session) throws BaseException, SQLException {
+        super.validateLoginAdmin(session); //ili go nqma v bazata
+        UserDAO.getInstance().deleteUser(username);
+        return new ErrorMsg("User deleted successfully", LocalDateTime.now(), 200);
+
     }
 
     //to fix
