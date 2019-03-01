@@ -72,7 +72,7 @@ public abstract class BaseController {
     protected void validateProductInput(String name, String category, double price, int quantity, String manifacturer, String description,
                                 String photo)throws InvalidInputException {
         if(name == null || category == null || price < 0 || quantity < 0 || manifacturer == null || description == null || photo == null){
-            throw new InvalidInputException();
+            throw new InvalidInputException("Invalid input.");
         }
     }
 

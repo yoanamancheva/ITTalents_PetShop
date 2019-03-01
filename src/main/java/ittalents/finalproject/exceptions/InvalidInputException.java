@@ -1,8 +1,8 @@
 package ittalents.finalproject.exceptions;
 
 public class InvalidInputException extends BaseException {
-    public InvalidInputException() {
+    public InvalidInputException(String message) {
 
-        super("Invalid input.");
+        super(message);
     }
 }
