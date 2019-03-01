@@ -31,10 +31,10 @@ public class ImageController extends BaseController {
         //in petController and ProductController setting the images!!
     }
 
-    @GetMapping(value = "/{image_path}", produces = "image/png")
-    public @ResponseBody byte[] downloadImage(@PathVariable String img) throws FileNotFoundException {
-          File newFile = new File(IMAGE_DIR + img);
-          FileInputStream fis = new FileInputStream(newFile);
-        return IOUtils.();//not working
-    }
+//    @GetMapping(value = "/{image_path}", produces = "image/png")
+//    public @ResponseBody byte[] downloadImage(@PathVariable String img) throws FileNotFoundException {
+//          File newFile = new File(IMAGE_DIR + img);
+//          FileInputStream fis = new FileInputStream(newFile);
+//        return fis.();//not working
+//    }
 }
