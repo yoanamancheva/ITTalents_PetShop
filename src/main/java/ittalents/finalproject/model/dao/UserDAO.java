@@ -1,4 +1,4 @@
-package ittalents.finalproject.model.daos;
+package ittalents.finalproject.model.dao;
 
 import ittalents.finalproject.model.DBManager;
 import ittalents.finalproject.model.pojos.User;

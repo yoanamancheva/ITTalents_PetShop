@@ -1,10 +1,9 @@
-package ittalents.finalproject.model.daos;
+package ittalents.finalproject.model.dao;
 
 import ittalents.finalproject.exceptions.PetNotFoundException;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;

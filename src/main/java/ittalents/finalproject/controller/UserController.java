@@ -3,23 +3,15 @@ package ittalents.finalproject.controller;
 import ittalents.finalproject.exceptions.BaseException;
 import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.NotLoggedInException;
-import ittalents.finalproject.exceptions.ProductOutOfStockException;
 import ittalents.finalproject.model.pojos.User;
-import ittalents.finalproject.model.daos.UserDAO;
+import ittalents.finalproject.model.dao.UserDAO;
 import ittalents.finalproject.model.repos.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "users", produces = "application/json")

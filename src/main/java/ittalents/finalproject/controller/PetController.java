@@ -2,8 +2,7 @@ package ittalents.finalproject.controller;
 
 import ittalents.finalproject.exceptions.BaseException;
 import ittalents.finalproject.exceptions.InvalidInputException;
-import ittalents.finalproject.exceptions.PetNotFoundException;
-import ittalents.finalproject.model.daos.PetDao;
+import ittalents.finalproject.model.dao.PetDao;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

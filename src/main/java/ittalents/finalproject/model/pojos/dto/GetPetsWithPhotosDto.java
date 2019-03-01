@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @Getter
 @Setter
-public class GetPetsWithPhotos {
+public class GetPetsWithPhotosDto {
     private long id;
     private String gender;
     private String breed;
