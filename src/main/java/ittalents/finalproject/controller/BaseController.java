@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 @RestController
@@ -44,6 +45,12 @@ public abstract class BaseController {
     public ErrorMsg basedHandler(){
         return new ErrorMsg(new BaseException("You are trying to input invalid properties. Try again!").getMessage(),
                 LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ExceptionHandler({SQLException.class})
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorMsg sqlHandler(Exception e) {
+        return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 
 //    @ExceptionHandler({Exception.class})
