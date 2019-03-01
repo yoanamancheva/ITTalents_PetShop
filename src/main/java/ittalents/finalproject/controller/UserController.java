@@ -43,7 +43,8 @@ public class UserController extends BaseController{
     @GetMapping(value = "logout")
     public Object logout(HttpSession session) {
         if(session.getAttribute(LOGGED_USER) != null) {
-            session.removeAttribute(LOGGED_USER);
+//            session.removeAttribute(LOGGED_USER);
+            session.invalidate();
             return new ErrorMsg("You logged out successfully", LocalDateTime.now(), HttpStatus.OK.value());
         }
         return new ErrorMsg("You are not logged in", LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
