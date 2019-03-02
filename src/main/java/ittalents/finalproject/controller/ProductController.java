@@ -5,7 +5,10 @@ import ittalents.finalproject.exceptions.BaseException;
 import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.NotLoggedInException;
 import ittalents.finalproject.exceptions.ProductNotFoundException;
+import ittalents.finalproject.model.pojos.ErrorMsg;
 import ittalents.finalproject.model.pojos.products.Product;
+import ittalents.finalproject.model.pojos.products.ProductInSale;
+import ittalents.finalproject.model.repos.ProductInSaleRepository;
 import ittalents.finalproject.model.repos.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.swing.text.html.Option;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,12 +70,57 @@ public class ProductController extends BaseController {
 
 
     @PostMapping(value = "/products/add")
-    public Product save(@RequestBody Product product, HttpSession session) throws BaseException {
+    public Product add(@RequestBody Product product, HttpSession session) throws BaseException {
         validateLoginAdmin(session);
         validateProductInput(product);
+        validateProductByName(product);
         productRepository.save(product);
         return product;
     }
+
+    @PutMapping(value = "/products/update")
+    public Product update(@RequestBody Product product, HttpSession session) throws BaseException{
+        validateLoginAdmin(session);
+        validateProductInput(product);
+        if (!productRepository.findById(product.getId()).isPresent()) {
+            throw new InvalidInputException("There is not product with this id in the database.");
+        }
+        productRepository.save(product);
+        return product;
+    }
+
+    //to update in sale table and review
+    //1 to many
+    @DeleteMapping(value = "/products/remove/{id}")
+    public Object remove(@PathVariable("id") long id, HttpSession session) throws BaseException {
+        validateLoginAdmin(session);
+        Optional<Product> product = productRepository.findById(id);
+        if(product.isPresent()) {
+            productRepository.delete(product.get());
+            return new ErrorMsg(product.get().getName() + " was successfully removed from the database.",
+                    LocalDateTime.now(), HttpStatus.OK.value());
+        }
+        else {
+            throw new InvalidInputException("The product is not present in the database.");
+        }
+    }
+
+    @Autowired
+    private ProductInSaleRepository productInSaleRepository;
+
+    //TODO to fix, not working
+    @PostMapping(value = "/products/sale/add")
+    public ProductInSale addProductToSale(@RequestBody ProductInSale productInSale, HttpSession session) throws BaseException{
+        validateLoginAdmin(session);
+        if(productRepository.findById(productInSale.getProductId()).isPresent()) {
+            productInSaleRepository.save(productInSale);
+            return productInSale;
+        }
+        else {
+            throw new InvalidInputException("There is no product with that id in the main table.");
+        }
+    }
+
 
     private void validateProductInput(Product product)throws BaseException {
         if(product.getName() == null || product.getCategory() == null || product.getPrice() < 0
@@ -79,10 +128,11 @@ public class ProductController extends BaseController {
                 || product.getDescription() == null || product.getPhoto() == null){
             throw new InvalidInputException("Invalid input for the product input.");
         }
+    }
+    private void validateProductByName(Product product) throws BaseException {
         if (getProductByName(product.getName()) != null) {
             throw new InvalidInputException("Product with that name already exists.");
         }
-
     }
 
     private Product getProductByName(String name) {

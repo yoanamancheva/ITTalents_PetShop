@@ -40,6 +40,12 @@ public abstract class BaseController {
         return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value());
     }
 
+    @ExceptionHandler({ProductOutOfStockException.class})
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ErrorMsg productOutOfStockHandler(Exception e) {
+        return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
+    }
+
     @ExceptionHandler({BaseException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ErrorMsg basedHandler(){
