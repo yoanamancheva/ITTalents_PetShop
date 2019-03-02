@@ -7,14 +7,19 @@ import ittalents.finalproject.model.pojos.ErrorMsg;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.dao.UserDAO;
 import ittalents.finalproject.model.repos.UserRepository;
+import lombok.*;
+import org.omg.CORBA.PRIVATE_MEMBER;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
+import javax.jws.soap.SOAPBinding;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "users", produces = "application/json")
@@ -93,6 +98,62 @@ public class UserController extends BaseController{
         throw new InvalidInputException("Wrong username/password");
     }
 
+    @PutMapping(value = "profile/delete")
+    public Object deleteProfile(@RequestBody User user, HttpSession session)
+                                throws BaseException {
+        validateLogin(session);
+        User userSession = (User)session.getAttribute(LOGGED_USER);
+        if(userRepository.findById(userSession.getId()).isPresent()) {
+            if(userSession.getPassword().equals(user.getPassword()) && userSession.getEmail().equals(user.getEmail())) {
+                userSession.setUsername("deleted");
+                userSession.setFirstName("deleted");
+                userSession.setLastName("deleted");
+                userSession.setPassword("deleted");
+                userSession.setPassword2("deleted");
+                userSession.setEmail("deleted");
+                userRepository.save(userSession);
+                return new ErrorMsg("Profile deleted successfully.", LocalDateTime.now(), HttpStatus.OK.value());
+            }
+        }
+        throw new InvalidInputException("Wrong email/password. Can not delete profile.");
+    }
+
+    @PutMapping(value = "profile/update/password")
+    public Object updatePassword(@RequestBody ChangePasswordUser pendingUser,  HttpSession session) throws BaseException {
+        validateLogin(session);
+        User user = (User)session.getAttribute(LOGGED_USER);
+        System.out.println("?????????????????????????????????");
+        System.out.println(pendingUser);
+        if(userRepository.findById(user.getId()).isPresent()) {
+            if(user.getPassword().equals(pendingUser.getPassword()) && user.getUsername().equals(pendingUser.getUsername())) {
+                if(!user.getPassword().equals(pendingUser.getNewPassword())) {
+                    if (pendingUser.getNewPassword().length() >= 3) {
+                        user.setPassword(pendingUser.getNewPassword());
+                        userRepository.save(user);
+                        return new ErrorMsg("You successfully changed your password.", LocalDateTime.now(),
+                                            HttpStatus.OK.value());
+                    }
+                    throw new InvalidInputException("New password should be more than 3 symbols.");
+                }
+                throw new InvalidInputException("New password can not be the same as old password.");
+            }
+            throw new InvalidInputException("Wrong username/password. Can not change password.");
+        }
+        throw new InvalidInputException("No user with that username/password.");
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Component
+    @ToString
+    private static class ChangePasswordUser {
+        private String username;
+        private String password;
+        private String newPassword;
+    }
+
 
     private void validateNullInput(User user) throws BaseException {
         if(user.getUsername() == null) {
@@ -136,14 +197,14 @@ public class UserController extends BaseController{
 //    }
 
 
-        //TODO validation
-    @GetMapping(value = "delete/{username}")
-    public Object deleteUser (@PathVariable("username") String username, HttpSession session) throws BaseException, SQLException {
-        super.validateLoginAdmin(session); //ili go nqma v bazata
-        UserDAO.getInstance().deleteUser(username);
-        return new ErrorMsg("User deleted successfully", LocalDateTime.now(), 200);
-
-    }
+//    todo deleting user, cannot due to being fk i other tables
+//    @GetMapping(value = "delete/username/{username}")
+//    public Object deleteUser (@PathVariable("username") String username, HttpSession session) throws BaseException, SQLException {
+//        super.validateLoginAdmin(session); //ili go nqma v bazata
+//        UserDAO.getInstance().deleteUser(username);
+//        return new ErrorMsg("User deleted successfully", LocalDateTime.now(), 200);
+//
+//    }
 
     //to fix
 //    @PostMapping(value = "/users/login")

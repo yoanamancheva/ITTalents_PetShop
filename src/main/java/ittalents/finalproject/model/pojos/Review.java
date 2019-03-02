@@ -22,6 +22,7 @@ public class Review implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 //    @Column(name = "product_id", nullable=false)
+//    @Transient
 //    private long productId;
     private long userId;
     private String review;
