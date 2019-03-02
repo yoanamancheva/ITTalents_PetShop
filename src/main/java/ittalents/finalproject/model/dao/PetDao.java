@@ -142,7 +142,7 @@ public class PetDao {
                         rs.getBoolean("p.in_sale"),
                         rs.getDouble("p.price"),
                         rs.getInt("p.quantity"),
-                        new Photo(rs.getLong("ph.id"), rs.getString("ph.photo_path"), rs.getLong("p.id")));});
+                (List<Photo>) new Photo(rs.getLong("ph.id"), rs.getString("ph.photo_path"), rs.getLong("p.id")));});
         return pets;
     }
 
