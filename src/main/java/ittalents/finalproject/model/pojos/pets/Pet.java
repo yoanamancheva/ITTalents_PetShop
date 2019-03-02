@@ -22,7 +22,7 @@ public class Pet {
     private int age;
     private Timestamp posted;
     private String petDesc;
-    private boolean inSale;
+    private boolean inSale = false;
     private double price;
     private int quantity;
 
