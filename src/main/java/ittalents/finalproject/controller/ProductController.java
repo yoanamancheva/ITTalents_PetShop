@@ -126,11 +126,14 @@ public class ProductController extends BaseController {
     @Autowired
     private ProductInSaleRepository productInSaleRepository;
 
-    //TODO to fix, not working
     @PostMapping(value = "/products/sale/add")
     public ProductInSale addProductToSale(@RequestBody ProductInSale productInSale, HttpSession session) throws BaseException{
         validateLoginAdmin(session);
+
         if(productRepository.findById(productInSale.getProductId()).isPresent()) {
+            if(productInSale.getStartDate().compareTo(productInSale.getEndDate()) > 0) {
+                throw new InvalidInputException("The start date can not be after the end date.");
+            }
             productInSaleRepository.save(productInSale);
             return productInSale;
         }
