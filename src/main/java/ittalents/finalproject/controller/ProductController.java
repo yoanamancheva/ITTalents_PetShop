@@ -6,10 +6,12 @@ import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.NotLoggedInException;
 import ittalents.finalproject.exceptions.ProductNotFoundException;
 import ittalents.finalproject.model.pojos.ErrorMsg;
+import ittalents.finalproject.model.pojos.dto.ProductReviewsDTO;
 import ittalents.finalproject.model.pojos.products.Product;
 import ittalents.finalproject.model.pojos.products.ProductInSale;
 import ittalents.finalproject.model.repos.ProductInSaleRepository;
 import ittalents.finalproject.model.repos.ProductRepository;
+import ittalents.finalproject.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,22 @@ import java.util.Optional;
 
 @RestController
 public class ProductController extends BaseController {
+
+    @Autowired
+    private ProductService productService;
+
+    @GetMapping("/products/reviews")
+    public List<ProductReviewsDTO> getAllProductsWithReviews() {
+        return productService.getReviewsForAllProducts();
+    }
+
+
+
+
+
+
+
+//    -----------------------------------------------------------------------
 
     @Autowired
     private ProductRepository productRepository;
