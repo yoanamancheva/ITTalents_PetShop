@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -44,13 +45,10 @@ public class OrderController  extends BaseController{
         return finalOrderProductRepository.save(finalOrderProduct);
     }
 
-
-
-    //todo delete from session when order is over
-    //todo save in products_in_order not working - same productId for all products
+    
     @PostMapping(value = "cart/order")
     public Object makeOrder(@RequestBody FinalOrderProducts finalOrder,HttpSession session) throws BaseException {
-        List<OrderedProduct> orderedProducts = new ArrayList<>();
+        List<OrderedProduct> list = new ArrayList<>();
 
         OrderedProduct orderedProduct1 = new OrderedProduct();
         OrderedProduct.OrderedProductPk pk = new OrderedProduct.OrderedProductPk();
@@ -76,55 +74,43 @@ public class OrderController  extends BaseController{
                 orderedProduct1.setMidProductId(convertedId);
                 orderedProduct1.setQuantity((int)session.getAttribute(attribute));
 
+                list.add(orderedProduct1);
+                orderedProduct1 = new OrderedProduct();
 
-//                System.out.println("ordered product - >" + orderedProduct1);
-                orderedProducts.add(orderedProduct1);
-
-//                System.out.println("---------------------------------");
-//                System.out.println("mid product id " + orderedProduct1.getMidProductId());
-
-//                System.out.println("product: " + attribute + " : " + session.getAttribute(attribute));
 
                 Product product = productController.getById(convertedId, session);
                 if(checkIfProductIsInSale(product, session) != -1) {
                     money += checkIfProductIsInSale(product, session) * (int)session.getAttribute(attribute);
 //                    System.out.println("mid money = " + money);
-
-
-
                 }
                 else {
                     money += product.getPrice() * (int)session.getAttribute(attribute);
 //                    System.out.println("mid money = " + money);
                 }
+
             }
         }
-
-        System.out.println("All money: " + money);
+//        System.out.println("All money: " + money);
 
         finalOrder.setFinalPrice(money);
 
-//        to save in all_orders_products table - working
+//        to save in all_orders_products table
         long orderId =  finalOrderProductRepository.save(finalOrder).getId();
 
-        for (OrderedProduct orderedProduct : orderedProducts) {
-//            orderedProduct.setMidOrderId(orderId);
+        for (OrderedProduct orderedProduct : list) {
+            orderedProduct.setMidOrderId(orderId);
 
             pk.setOrderId(orderId);
 
             pk.setProductId(orderedProduct.getMidProductId());
 
             orderedProduct.setOrderedProductPk(pk);
+            orderedProductRepository.save(orderedProduct);
         }
+        removeAttributesFromSession(session, "_product");
 
-         for(OrderedProduct orderedProduct : orderedProducts) {
-             System.out.println(orderedProduct);
-         }
-         return finalOrder;
+        return finalOrder;
     }
-
-
-
 
 
     private double checkIfProductIsInSale(Product product, HttpSession session) throws BaseException{
@@ -134,6 +120,16 @@ public class OrderController  extends BaseController{
             return productInSale.getDiscountPrice();
         }
         else return -1;
+    }
+
+    private void removeAttributesFromSession(HttpSession session, String name) {
+        Enumeration<String> attributes = session.getAttributeNames();
+        while ((attributes.hasMoreElements())) {
+            String attribute = attributes.nextElement();
+            if(attribute.contains(name)) {
+                session.removeAttribute(attribute);
+            }
+        }
     }
 
 
