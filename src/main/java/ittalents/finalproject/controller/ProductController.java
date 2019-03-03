@@ -54,7 +54,7 @@ public class ProductController extends BaseController {
 
     @GetMapping(value = "/products/{id}")
     public Product getById(@PathVariable("id") long id, HttpSession session) throws BaseException{
-        validateLoginAdmin(session);
+        validateLogin(session);
         Optional<Product> obj = productRepository.findById(id);
         if(obj.isPresent()) {
             return obj.get();
@@ -63,7 +63,6 @@ public class ProductController extends BaseController {
             throw new ProductNotFoundException("Product not found with that id.");
         }
     }
-
 
     @PostMapping(value = "/products/filter")
     public Optional<Product> showProductByName(@RequestParam("name") String name) throws BaseException{
@@ -107,7 +106,7 @@ public class ProductController extends BaseController {
         return product;
     }
 
-    //to update in sale table and review
+    //todo to update in sale table and review
     //1 to many
     @DeleteMapping(value = "/products/remove/{id}")
     public Object remove(@PathVariable("id") long id, HttpSession session) throws BaseException {

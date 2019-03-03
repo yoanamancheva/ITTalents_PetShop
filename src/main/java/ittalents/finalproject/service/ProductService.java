@@ -13,6 +13,8 @@ public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+
     public List<ProductReviewsDTO> getReviewsForAllProducts() {
         return productRepository.findAll().stream().map(product ->
                 new ProductReviewsDTO(product.getId(), product.getName(), product.getCategory(),

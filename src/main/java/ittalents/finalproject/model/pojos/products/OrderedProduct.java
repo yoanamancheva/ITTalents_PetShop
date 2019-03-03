@@ -1,15 +1,13 @@
 package ittalents.finalproject.model.pojos.products;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
@@ -26,10 +24,16 @@ public class OrderedProduct implements Serializable{
 //    private long orderId;
     @Column(name = "quantity")
     private int quantity;
+
+    @Transient
+    private long midProductId;
+    @Transient
+    private long midOrderId;
 //    private long userId;
 
 
 
+    @ToString
     @AllArgsConstructor
     @Getter
     @Setter
@@ -39,6 +43,14 @@ public class OrderedProduct implements Serializable{
         protected Long orderId;
         @Column(name = "product_id")
         protected Long productId;
+
+        public void setOrderId(Long orderId) {
+            this.orderId = orderId;
+        }
+
+        public void setProductId(Long productId) {
+            this.productId = productId;
+        }
 
         public OrderedProductPk() {
         }
