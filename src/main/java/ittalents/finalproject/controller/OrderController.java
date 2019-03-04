@@ -45,7 +45,7 @@ public class OrderController  extends BaseController{
         return finalOrderProductRepository.save(finalOrderProduct);
     }
 
-    
+
     @PostMapping(value = "cart/order")
     public Object makeOrder(@RequestBody FinalOrderProducts finalOrder,HttpSession session) throws BaseException {
         List<OrderedProduct> list = new ArrayList<>();

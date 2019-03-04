@@ -28,10 +28,10 @@ public class ProductController extends BaseController {
     @Autowired
     private ProductService productService;
 
-    @GetMapping("/products/reviews")
-    public List<ProductReviewsDTO> getAllProductsWithReviews() {
-        return productService.getReviewsForAllProducts();
-    }
+//    @GetMapping("/products/reviews")
+//    public List<ProductReviewsDTO> getAllProductsWithReviews() {
+//        return productService.getReviewsForAllProducts();
+//    }
 
 
 

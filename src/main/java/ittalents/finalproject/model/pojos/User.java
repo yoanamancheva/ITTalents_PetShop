@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @NoArgsConstructor
 @Setter
@@ -26,6 +27,10 @@ public class User {
     private String lastName;
     private String email;
     private boolean administrator;
+
+
+//    @JoinColumn(name="id",referencedColumnName="user_id")
+//    private Set<Review> reviews;
 
 
     public User(String username, String password, String firstName, String lastName, String email) {

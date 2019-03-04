@@ -10,6 +10,8 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @NoArgsConstructor
 @Setter
@@ -30,9 +32,10 @@ public class Product {
     private String description;
     private String photo;
 
-    @OneToMany
+
+//    @OneToMany
 //    @JoinColumn(name="id",referencedColumnName="productId")
-    private Set<Review> reviews;
+//    private Set<Review> reviews;
 
 
     public Product(long id, String name, String category, double price, int quantity, String manufacturer, String description, String photo) {
@@ -45,4 +48,5 @@ public class Product {
         this.description = description;
         this.photo = photo;
     }
+
 }

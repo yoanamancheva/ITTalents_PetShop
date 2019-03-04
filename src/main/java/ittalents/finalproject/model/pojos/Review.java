@@ -16,24 +16,28 @@ import java.io.Serializable;
 @Getter
 @Entity
 @Table(name = "reviews")
-public class Review implements Serializable {
+public class Review{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-//    @Column(name = "product_id", nullable=false)
-//    @Transient
-//    private long productId;
-    private long userId;
-    private String review;
 
     @ManyToOne
-//    @JoinColumn(name="productId",referencedColumnName="id", nullable = false)
+    @JoinColumn(name = "product_id")
     private Product product;
 
-//    public Review(long productId, long userId, String review) {
-//        this.productId = productId;
-//        this.userId = userId;
-//        this.review = review;
-//    }
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    private String review;
+    private int rating;
+
+    public Review(Product product, User user, String review, int rating) {
+        super();
+        this.product = product;
+        this.user = user;
+        this.review = review;
+        this.rating = rating;
+    }
 }
