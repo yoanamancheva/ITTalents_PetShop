@@ -1,6 +1,7 @@
 package ittalents.finalproject.model.pojos.dto;
 
 
+import ittalents.finalproject.model.pojos.User;
 import lombok.*;
 
 import javax.persistence.Entity;
@@ -28,7 +29,7 @@ public class ListProduct {
         this.description = description;
     }
 
-    public void fillReviews(List<ListReview> reviews) {
+    public void addReviews(List<ListReview> reviews) {
         this.reviews = new ArrayList<>();
         for (ListReview listReview : reviews) {
             this.reviews.add(listReview);

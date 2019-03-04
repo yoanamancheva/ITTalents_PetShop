@@ -19,4 +19,6 @@ public class ListReview {
     private Long id;
     private String review;
     private int rating;
+    private String user;
+
 }

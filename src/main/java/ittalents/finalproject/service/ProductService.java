@@ -24,27 +24,30 @@ public class ProductService {
     private ReviewRepository reviewRepository;
 
 
-//    !!!!!
-    public List<ListReview> getReviewsForProduct(long id) {
+
+    private List<ListReview> getReviewsForProduct(long id) {
+
         return this.reviewRepository.findAll().stream()
                 .filter(review ->  review.getProduct().getId() == id)
-                .map(review ->  new ListReview(review.getId(), review.getReview(), review.getRating()))
+                .map(review ->  new ListReview(review.getId(), review.getReview(), review.getRating(), review.getUser().getUsername()))
                 .collect(Collectors.toList());
     }
 
 
     public ListProduct getAllInfoForProduct(long id) throws InvalidInputException {
-        Product p = this.productRepository.findById(id).get();
-//        if(p == ) {
-//            throw new InvalidInputException("");
-//        }
-        List<ListReview> reviews = getReviewsForProduct(id);
 
-        ListProduct info = new ListProduct(p.getId(), p.getName(), p.getDescription());
-        info.fillReviews(reviews);
+        if(this.productRepository.findById(id).isPresent()) {
+            Product p = this.productRepository.findById(id).get();
+            List<ListReview> reviews = getReviewsForProduct(id);
 
-        return info;
+            ListProduct productReviews = new ListProduct(p.getId(), p.getName(), p.getDescription());
+            productReviews.addReviews(reviews);
 
+            return productReviews;
+        }
+        else {
+            throw new InvalidInputException("No product found with that id.");
+        }
     }
 
 
