@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
+//@Transactional(rollbackfor = //nqkakuv exception)
 @RestController
 public abstract class BaseController {
 
@@ -28,7 +30,7 @@ public abstract class BaseController {
     }
 
 
-    @ExceptionHandler({ProductNotFoundException.class})
+    @ExceptionHandler({ProductNotFoundException.class, PetNotFoundException.class})
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     public ErrorMsg productNotFound(Exception e) {
         return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.NOT_FOUND.value());

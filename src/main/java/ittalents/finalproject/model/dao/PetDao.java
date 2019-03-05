@@ -64,8 +64,7 @@ public class PetDao {
 
     public Pet getById(long id){
         String getById = "SELECT id, gender, breed, sub_breed, age, posted, pet_desc, in_sale, price, quantity FROM pets WHERE id = ?;";
-        Pet pet;
-        pet = db.query(getById, new Object[]{id}, (resultSet) -> {
+        Pet pet = db.query(getById, new Object[]{id}, (resultSet) -> {
             resultSet.next();
             return toPet(resultSet);
         });
@@ -110,7 +109,7 @@ public class PetDao {
 //       return pets;
 //    }
 
-    public void delete(long id) throws PetNotFoundException {
+    public void delete(long id) {
         String deletePet = "DELETE FROM pets WHERE id = ?";
         db.update(deletePet, new Object[] {id});
     }
@@ -128,28 +127,39 @@ public class PetDao {
         photo.setId(key.getKey().longValue());
     }
 
+    public List<Photo> getImagesById(long id) {
+        String getPhotos = "SELECT  ph.id, ph.photo_path, ph.pet_id FROM pets AS p JOIN pets_photos AS ph ON ? = pet_id;";
+        return db.query(getPhotos, (rs, i) -> {return new Photo(rs.getLong("ph.id"),
+                                         rs.getString("ph.photo_path"),
+                                         rs.getLong("ph.pet_id"));},
+                            new Object[]{id});
+    }
+
     public List<PetWithPhotosDto> getPetsWithPhotos() {
         String getPets = "SELECT p.id, ph.id, p.gender, p.breed, p.sub_breed, p.age, p.posted, p.pet_desc, p.in_sale, p.quantity, " +
-                "ph.photo_path, p.price FROM pets AS p JOIN pets_photos AS ph ON id = pet_id;";
+                "ph.photo_path, p.price FROM pets AS p JOIN pets_photos AS ph ON p.id = ph.pet_id;";
+        List<Photo> photos = db.query(getPets, (rs, i) -> {return new Photo(rs.getLong("ph.id"),
+                rs.getString("ph.photo_path"),
+                rs.getLong("p.id"));});
+        System.out.println(photos.toString());
+
         List<PetWithPhotosDto> pets = db.query(getPets, (rs, i) -> {return new PetWithPhotosDto(
-                        rs.getLong("p.id"),
-                        rs.getString("p.gender"),
-                        rs.getString("p.breed"),
-                        rs.getString("p.sub_breed"),
-                        rs.getInt("p.age"),
-                        rs.getTimestamp("p.posted"),
-                        rs.getString("p.pet_desc"),
-                        rs.getBoolean("p.in_sale"),
-                        rs.getDouble("p.price"),
-                        rs.getInt("p.quantity"),
-                (List<Photo>) new Photo(rs.getLong("ph.id"), rs.getString("ph.photo_path"), rs.getLong("p.id")));});
+                rs.getLong("p.id"),
+                rs.getString("p.gender"),
+                rs.getString("p.breed"),
+                rs.getString("p.sub_breed"),
+                rs.getInt("p.age"),
+                rs.getTimestamp("p.posted"),
+                rs.getString("p.pet_desc"),
+                rs.getBoolean("p.in_sale"),
+                rs.getDouble("p.price"),
+                rs.getInt("p.quantity"),
+                photos);});
         return pets;
     }
 
-    public List<Photo> getImagesById(long id) {
-        String getPhotos = "SELECT  ph.id, ph.photo_path, ph.pet_id FROM pets AS p JOIN pets_photos AS ph ON id = pet_id;";
-        return db.query(getPhotos, (rs, i) -> {return new Photo(rs.getLong("ph.id"),
-                                                        rs.getString("ph.photo_path"),
-                                                        rs.getLong("ph.pet_id"));});
+    public void addForSale(Pet pet) {
+        String addForSale = "INSERT INTO pets_in_sale(pet_id, start_date, end_date, discount_price) VALUES(?, ?, ?, ?);";
+
     }
 }
