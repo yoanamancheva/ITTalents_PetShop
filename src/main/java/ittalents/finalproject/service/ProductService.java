@@ -9,12 +9,13 @@ import ittalents.finalproject.model.pojos.products.Product;
 import ittalents.finalproject.model.repos.ProductRepository;
 import ittalents.finalproject.model.repos.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestController
+@Service
 public class ProductService {
 
     @Autowired
