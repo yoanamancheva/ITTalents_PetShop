@@ -7,6 +7,8 @@ import ittalents.finalproject.model.pojos.ErrorMsg;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.dao.UserDAO;
 import ittalents.finalproject.model.repos.UserRepository;
+import ittalents.finalproject.utils.email.MailUtil;
+import ittalents.finalproject.utils.email.Notificator;
 import lombok.*;
 import org.omg.CORBA.PRIVATE_MEMBER;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +30,15 @@ public class UserController extends BaseController{
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private Notificator notificator;
+
     @PostMapping(value = "register")
     public User addUser(@RequestBody User user, HttpSession session) throws BaseException{
         validateUserInput(user);
+        if(user.isNotifications()) {
+            notificator.addObserver(user);
+        }
         userRepository.save(user);
         session.setAttribute(LOGGED_USER, user);
         return user;
@@ -48,7 +56,6 @@ public class UserController extends BaseController{
     @GetMapping(value = "logout")
     public Object logout(HttpSession session) {
         if(session.getAttribute(LOGGED_USER) != null) {
-//            session.removeAttribute(LOGGED_USER);
             session.invalidate();
             return new ErrorMsg("You logged out successfully", LocalDateTime.now(), HttpStatus.OK.value());
         }

@@ -12,16 +12,6 @@ import java.io.IOException;
 public class EmailController {
     @Autowired
     private EmailService emailService;
-    @RequestMapping(value = "/sendemail")
-    public String sendEmail() {
-        try {
-            emailService.sendmail();
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            System.out.println("loshu -----------");
-            e.printStackTrace();
-        }
-        return "Email sent successfully.";
-    }
+
+
 }

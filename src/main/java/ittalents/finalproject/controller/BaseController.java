@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
@@ -46,6 +47,13 @@ public abstract class BaseController {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ErrorMsg productOutOfStockHandler(Exception e) {
         return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ExceptionHandler({MessagingException.class})
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorMsg emailHandler(Exception e) {
+        return new ErrorMsg("Problem with sending the email. Please try again later.", LocalDateTime.now(),
+                            HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 
     @ExceptionHandler({BaseException.class})
