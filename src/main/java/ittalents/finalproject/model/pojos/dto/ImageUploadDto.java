@@ -14,4 +14,8 @@ public class ImageUploadDto {
     private String title;
     private String imageStr;
 
+    public ImageUploadDto(String imageStr){
+        this.imageStr = imageStr;
+    }
+
 }

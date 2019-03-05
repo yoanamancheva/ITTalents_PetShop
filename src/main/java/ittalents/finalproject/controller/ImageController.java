@@ -27,6 +27,7 @@ public class ImageController extends BaseController {
         byte[] bytes = Base64.getDecoder().decode(base64);
         Long id = user.getId();
         String fileName = id.intValue() + System.currentTimeMillis() + ".png";
+        dto.setTitle(fileName);
         File file = new File(IMAGE_DIR + fileName);
         FileOutputStream fos = new FileOutputStream(file);
         fos.write(bytes);
