@@ -141,7 +141,6 @@ public class PetDao {
         List<Photo> photos = db.query(getPets, (rs, i) -> {return new Photo(rs.getLong("ph.id"),
                 rs.getString("ph.photo_path"),
                 rs.getLong("p.id"));});
-        System.out.println(photos.toString());
 
         List<PetWithPhotosDto> pets = db.query(getPets, (rs, i) -> {return new PetWithPhotosDto(
                 rs.getLong("p.id"),

@@ -3,7 +3,7 @@ package ittalents.finalproject.controller;
 import ittalents.finalproject.exceptions.BaseException;
 import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.NotLoggedInException;
-import ittalents.finalproject.model.pojos.ErrorMsg;
+import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.dao.UserDAO;
 import ittalents.finalproject.model.repos.UserRepository;
@@ -57,9 +57,9 @@ public class UserController extends BaseController{
     public Object logout(HttpSession session) {
         if(session.getAttribute(LOGGED_USER) != null) {
             session.invalidate();
-            return new ErrorMsg("You logged out successfully", LocalDateTime.now(), HttpStatus.OK.value());
+            return new Message("You logged out successfully", LocalDateTime.now(), HttpStatus.OK.value());
         }
-        return new ErrorMsg("You are not logged in", LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
+        return new Message("You are not logged in", LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
     }
 
     private void validateUserInput( User user) throws BaseException{
@@ -100,7 +100,7 @@ public class UserController extends BaseController{
         if(getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
             getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
             session.setAttribute(LOGGED_USER, getUserByName(pendingUsername));
-            return new ErrorMsg("You logged successfully.", LocalDateTime.now(), 200);
+            return new Message("You logged successfully.", LocalDateTime.now(), 200);
         }
         throw new InvalidInputException("Wrong username/password");
     }
@@ -119,7 +119,7 @@ public class UserController extends BaseController{
                 userSession.setPassword2("deleted");
                 userSession.setEmail("deleted");
                 userRepository.save(userSession);
-                return new ErrorMsg("Profile deleted successfully.", LocalDateTime.now(), HttpStatus.OK.value());
+                return new Message("Profile deleted successfully.", LocalDateTime.now(), HttpStatus.OK.value());
             }
         }
         throw new InvalidInputException("Wrong email/password. Can not delete profile.");
@@ -137,7 +137,7 @@ public class UserController extends BaseController{
                     if (pendingUser.getNewPassword().length() >= 3) {
                         user.setPassword(pendingUser.getNewPassword());
                         userRepository.save(user);
-                        return new ErrorMsg("You successfully changed your password.", LocalDateTime.now(),
+                        return new Message("You successfully changed your password.", LocalDateTime.now(),
                                             HttpStatus.OK.value());
                     }
                     throw new InvalidInputException("New password should be more than 3 symbols.");
@@ -211,7 +211,7 @@ public class UserController extends BaseController{
 //    public Object deleteUser (@PathVariable("username") String username, HttpSession session) throws BaseException, SQLException {
 //        super.validateLoginAdmin(session); //ili go nqma v bazata
 //        UserDAO.getInstance().deleteUser(username);
-//        return new ErrorMsg("User deleted successfully", LocalDateTime.now(), 200);
+//        return new Message("User deleted successfully", LocalDateTime.now(), 200);
 //
 //    }
 
