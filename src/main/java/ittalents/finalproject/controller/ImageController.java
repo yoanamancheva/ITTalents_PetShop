@@ -19,7 +19,7 @@ public class ImageController extends BaseController {
     private static final String IMAGE_DIR = "D:" + File.separator + "uploads" + File.separator;
 
     @PostMapping()
-    public String uploadImage(@RequestParam MultipartFile img, HttpSession session) throws IOException, BaseException {
+    public String uploadImage(@RequestParam MultipartFile img, HttpSession session) throws BaseException, IOException {
         if(!img.isEmpty()) {
             User user = (User) session.getAttribute(BaseController.LOGGED_USER);
             super.validateLoginAdmin(session);

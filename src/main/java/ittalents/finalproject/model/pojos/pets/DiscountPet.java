@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 
@@ -14,12 +16,11 @@ public class DiscountPet {
 
     private long id;
     private long petId;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private Timestamp startDate;
+    private Timestamp endDate;
     private int discountPrice;
 
-    public DiscountPet(long petId, LocalDateTime startDate, LocalDateTime endDate, int discountPrice) {
-        this.petId = petId;
+    public DiscountPet(Timestamp startDate, Timestamp endDate, int discountPrice) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.discountPrice = discountPrice;

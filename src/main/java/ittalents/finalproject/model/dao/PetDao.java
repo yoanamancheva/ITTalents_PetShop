@@ -2,12 +2,17 @@ package ittalents.finalproject.model.dao;
 
 import com.mysql.cj.util.StringUtils;
 import ittalents.finalproject.exceptions.PetNotFoundException;
+import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.dto.ImageUploadDto;
+import ittalents.finalproject.model.pojos.dto.PetForSaleDto;
 import ittalents.finalproject.model.pojos.dto.PetWithPhotosDto;
+import ittalents.finalproject.model.pojos.pets.DiscountPet;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import ittalents.finalproject.model.pojos.pets.Photo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -27,8 +32,8 @@ public class PetDao {
 
         String insertPet = "INSERT INTO pets(gender, breed, sub_breed, age, pet_desc, price, quantity) VALUES(?, ?, ?, ?, ?, ?, ?);";
         KeyHolder key = new GeneratedKeyHolder();
-        db.update((connection)-> {
-            PreparedStatement ps = connection.prepareStatement(insertPet, Statement.RETURN_GENERATED_KEYS);
+        db.update((con)-> {
+            PreparedStatement ps = con.prepareStatement(insertPet, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, pet.getGender());
             ps.setString(2, pet.getBreed());
             ps.setString(3, pet.getSubBreed());
@@ -71,49 +76,10 @@ public class PetDao {
         return pet;
     }
 
-    //into dto to add photos
-//    public List<Pet> getFiltred(String breed, String subBreed, int fromAge, int toAge, String gender,
-//                                double fromPrice, double toPrice, String sortBy, String ascDesc) {
-//
-//        String selectClause = "SELECT * FROM EMPLOYEES WHERE ";
-//        if(StringUtils.isNotBlank(empName)){
-//            selectQuery += "AND EMP_NAME = " + empName;
-//        }
-//        if(StringUtils.isNotBlank(empID)){
-//            selectQuery += "AND EMP_ID = " + empID;
-//
-//        String filter;
-//        List<Pet> pets = null;
-//        if(subBreed != null && fromAge > -1 && toAge > -1 && gender != null && fromPrice > 0 && toPrice > 0 &&
-//            sortBy != null && ascDesc != null) {
-//            if (fromAge > toAge) {
-//                int temp = fromAge;
-//                fromAge = toAge;
-//                toAge = temp;
-//            } else if (fromPrice > toPrice) {
-//                double temp = fromPrice;
-//                fromPrice = toPrice;
-//                toPrice = temp;
-//            }
-//            filter = "SELECT id, gender, breed, sub_breed, age, posted, pet_desc, in_sale, price, quantity FROM pets WHERE (age >= ? AND age <= ?)" +
-//                    " AND breed LIKE ? AND sub_breed LIKE ? AND gender LIKE ? && (price >= ? AND price <= ?) ORDER BY ? ?" +
-//                    " ORDER BY ? ?";
-//            pets = db.query(filter, new Object[]{fromAge, toAge, breed, subBreed, gender, fromPrice, toPrice}, (resultSet, i) -> toPet(resultSet));
-//        }
-////       else if(){
-////
-//       }
-//
-//
-//
-//       return pets;
-//    }
-
     public void delete(long id) {
         String deletePet = "DELETE FROM pets WHERE id = ?";
         db.update(deletePet, new Object[] {id});
     }
-
 
     public void setImage(Photo photo) {
         String setImg = "INSERT INTO pets_photos(photo_path, pet_id) VALUES(?, ?);";
@@ -137,28 +103,98 @@ public class PetDao {
 
     public List<PetWithPhotosDto> getPetsWithPhotos() {
         String getPets = "SELECT p.id, ph.id, p.gender, p.breed, p.sub_breed, p.age, p.posted, p.pet_desc, p.in_sale, p.quantity, " +
-                "ph.photo_path, p.price FROM pets AS p JOIN pets_photos AS ph ON p.id = ph.pet_id;";
-        List<Photo> photos = db.query(getPets, (rs, i) -> {return new Photo(rs.getLong("ph.id"),
-                rs.getString("ph.photo_path"),
-                rs.getLong("p.id"));});
+                "ph.photo_path, p.price FROM pets AS p JOIN pets_photos AS ph ON p.id = ph.pet_id";
+        List<Photo> photos = db.query(getPets, (rs, i) -> toPhoto(rs));
 
-        List<PetWithPhotosDto> pets = db.query(getPets, (rs, i) -> {return new PetWithPhotosDto(
-                rs.getLong("p.id"),
-                rs.getString("p.gender"),
-                rs.getString("p.breed"),
-                rs.getString("p.sub_breed"),
-                rs.getInt("p.age"),
-                rs.getTimestamp("p.posted"),
-                rs.getString("p.pet_desc"),
-                rs.getBoolean("p.in_sale"),
-                rs.getDouble("p.price"),
-                rs.getInt("p.quantity"),
-                photos);});
+        List<PetWithPhotosDto> pets = db.query(getPets + "  GROUP BY p.id;", (rs, i) -> toPetWithPhotos(rs, photos));
         return pets;
     }
 
-    public void addForSale(Pet pet) {
-        String addForSale = "INSERT INTO pets_in_sale(pet_id, start_date, end_date, discount_price) VALUES(?, ?, ?, ?);";
+    private PetWithPhotosDto toPetWithPhotos(ResultSet resultSet, List<Photo> photos) throws SQLException{
+        return new PetWithPhotosDto(
+            resultSet.getLong("p.id"),
+            resultSet.getString("p.gender"),
+            resultSet.getString("p.breed"),
+            resultSet.getString("p.sub_breed"),
+            resultSet.getInt("p.age"),
+            resultSet.getTimestamp("p.posted"),
+            resultSet.getString("p.pet_desc"),
+            resultSet.getBoolean("p.in_sale"),
+            resultSet.getDouble("p.price"),
+            resultSet.getInt("p.quantity"),
+            photos);
+    }
 
+    public void addForSale(Pet pet, DiscountPet petForSale) throws Exception{
+        Connection con = null;
+        PreparedStatement ps = null;
+        PreparedStatement ps2 = null;
+        try {
+            con = db.getDataSource().getConnection();
+            con.setAutoCommit(false);
+            String addForSale = "INSERT INTO pets_in_sale(pet_id, start_date, end_date, discount_price) VALUES(?, ?, ?, ?);";
+            String updatePet = "UPDATE pets SET price = ? WHERE id = ?";
+
+            ps = con.prepareStatement(addForSale, Statement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, petForSale.getPetId());
+            ps.setTimestamp(2, petForSale.getStartDate());
+            ps.setTimestamp(3, petForSale.getEndDate());
+            ps.setDouble(4, petForSale.getDiscountPrice());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            rs.next();
+            petForSale.setId(rs.getLong(1));
+
+            ps2 = con.prepareStatement(updatePet);
+            ps2.setDouble(1, petForSale.getDiscountPrice());
+            ps2.setLong(2, pet.getId());
+            ps2.executeUpdate();
+
+            con.commit();
+            System.out.println("Transaction made successfully");
+        }
+        catch(Exception e){
+            con.rollback();
+            throw new Exception();
+        }
+        finally {
+            con.setAutoCommit(true);
+        }
+    }
+
+    public List<PetForSaleDto> listPetsForSale() {
+        String petsForSale = "SELECT p.id, ps.id, ph.id, p.gender, p.breed, p.sub_breed," +
+                " p.age, p.posted, p.pet_desc,\n" +
+                " ps.discount_price, p.quantity, ps.start_date, ps.end_date, ph.photo_path\n" +
+                " FROM pets AS p\n" +
+                " JOIN pets_in_sale AS ps\n" +
+                " ON p.id = ps.pet_id\n" +
+                " JOIN pets_photos AS ph\n" +
+                " ON p.id = ph.pet_id\n";
+        List<Photo> photos = db.query(petsForSale, (rs, i) -> toPhoto(rs));
+        List<PetForSaleDto> pets = db.query(petsForSale + " GROUP BY ps.id;", (rs, i) -> toPetForSale(rs, photos));
+        return pets;
+    }
+
+    private Photo toPhoto(ResultSet rs) throws SQLException{
+        return new Photo(rs.getLong("ph.id"),
+                rs.getString("photo_path"),
+                rs.getLong("p.id"));
+    }
+
+    private PetForSaleDto toPetForSale(ResultSet rs, List<Photo> photos) throws SQLException{
+        return new PetForSaleDto(
+                rs.getLong("p.id"),
+                rs.getString("gender"),
+                rs.getString("breed"),
+                rs.getString("p.sub_breed"),
+                rs.getInt("age"),
+                rs.getString("pet_desc"),
+                rs.getInt("quantity"),
+                rs.getLong("ps.id"),
+                rs.getTimestamp("start_date"),
+                rs.getTimestamp("end_date"),
+                rs.getDouble("ps.discount_price"),
+                photos);
     }
 }

@@ -7,6 +7,7 @@ import ittalents.finalproject.exceptions.PetNotFoundException;
 import ittalents.finalproject.model.dao.PetDao;
 import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.dto.ImageUploadDto;
+import ittalents.finalproject.model.pojos.dto.PetForSaleDto;
 import ittalents.finalproject.model.pojos.dto.PetWithPhotosDto;
 import ittalents.finalproject.model.pojos.pets.DiscountPet;
 import ittalents.finalproject.model.pojos.pets.Pet;
@@ -17,8 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
+import javax.websocket.server.PathParam;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,14 +38,7 @@ public class PetController extends BaseController {
 
     @PostMapping(value = "/add")
     public Message add(@RequestBody Pet pet, HttpSession session) throws BaseException {
-
-        if(pet.getGender() == null || pet.getGender().equals("") || pet.getAge() < 0 || pet.getAge() > 20
-            || pet.getBreed() == null || pet.getBreed().equals("") ||  pet.getSubBreed().equals("")
-            || pet.getSubBreed() == null || pet.getQuantity() > 20
-            || pet.getQuantity() < 1 || pet.getPrice() < 0 || (!pet.getGender().equals("M")
-            && !pet.getGender().equals("F"))){
-            throw new InvalidInputException("Invalid input.");
-        }
+        validateInput(pet);
         super.validateLoginAdmin(session);
         dao.addPet(pet);
         System.out.println(pet.toString());
@@ -61,7 +57,7 @@ public class PetController extends BaseController {
     }
 
     @GetMapping(value = "/{id}")
-    public Pet getById(@PathVariable long id) throws BaseException{
+    public Pet getById(@PathVariable long id) throws PetNotFoundException{
         if(id > 0){
             return dao.getById(id);
         }
@@ -98,7 +94,7 @@ public class PetController extends BaseController {
     }
 
     @GetMapping("/{id}/images")
-    public PetWithPhotosDto getPetImages(@PathVariable long id)throws BaseException{
+    public PetWithPhotosDto getPetImages(@PathVariable long id)throws PetNotFoundException{
         Pet p = this.getById(id);
         List<Photo> photos = dao.getImagesById(id);
         PetWithPhotosDto pet = new PetWithPhotosDto(p.getId(), p.getGender(),
@@ -107,7 +103,7 @@ public class PetController extends BaseController {
         return pet;
     }
 
-    @GetMapping("/images")
+    @GetMapping("/images") //TODO manage to show distinct rows
     public List<PetWithPhotosDto> getPetsWithImage() throws PetNotFoundException{
         List<PetWithPhotosDto> pets = dao.getPetsWithPhotos();
         if(pets != null && !pets.isEmpty()){
@@ -117,4 +113,17 @@ public class PetController extends BaseController {
             throw new PetNotFoundException();
         }
     }
+
+
+    private void validateInput(Pet pet) throws InvalidInputException{
+        if(pet.getGender() == null || pet.getGender().equals("") || pet.getAge() < 0 || pet.getAge() > 20
+                || pet.getBreed() == null || pet.getBreed().equals("") ||  pet.getSubBreed().equals("")
+                || pet.getSubBreed() == null || pet.getQuantity() > 20
+                || pet.getQuantity() < 1 || pet.getPrice() < 0 || (!pet.getGender().equals("M")
+                && !pet.getGender().equals("F"))){
+
+            throw new InvalidInputException("Invalid input.");
+        }
+    }
+
 }

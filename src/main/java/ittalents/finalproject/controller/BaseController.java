@@ -51,8 +51,8 @@ public abstract class BaseController {
 
     @ExceptionHandler({MessagingException.class})
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorMsg emailHandler(Exception e) {
-        return new ErrorMsg("Problem with sending the email. Please try again later.", LocalDateTime.now(),
+    public Message emailHandler(Exception e) {
+        return new Message("Problem with sending the email. Please try again later.", LocalDateTime.now(),
                             HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 
