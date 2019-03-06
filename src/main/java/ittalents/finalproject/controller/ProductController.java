@@ -12,6 +12,7 @@ import ittalents.finalproject.model.pojos.products.ProductInSale;
 import ittalents.finalproject.model.repos.ProductInSaleRepository;
 import ittalents.finalproject.model.repos.ProductRepository;
 import ittalents.finalproject.service.ProductService;
+import ittalents.finalproject.utils.email.Notificator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,9 @@ public class ProductController extends BaseController {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private Notificator notificator;
 
     @GetMapping(value = "/products")
     public List<Product> getAll(HttpSession session) throws BaseException {
@@ -122,6 +126,7 @@ public class ProductController extends BaseController {
                 throw new InvalidInputException("The start date can not be after the end date.");
             }
             productInSaleRepository.save(productInSale);
+            notificator.sendNews();
             return productInSale;
         }
         else {
