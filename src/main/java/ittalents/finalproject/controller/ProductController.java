@@ -5,7 +5,7 @@ import ittalents.finalproject.exceptions.BaseException;
 import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.NotLoggedInException;
 import ittalents.finalproject.exceptions.ProductNotFoundException;
-import ittalents.finalproject.model.pojos.ErrorMsg;
+import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.dto.ProductReviewsDTO;
 import ittalents.finalproject.model.pojos.products.Product;
 import ittalents.finalproject.model.pojos.products.ProductInSale;
@@ -102,7 +102,7 @@ public class ProductController extends BaseController {
         Optional<Product> product = productRepository.findById(id);
         if(product.isPresent()) {
             productRepository.delete(product.get());
-            return new ErrorMsg(product.get().getName() + " was successfully removed from the database.",
+            return new Message(product.get().getName() + " was successfully removed from the database.",
                     LocalDateTime.now(), HttpStatus.OK.value());
         }
         else {

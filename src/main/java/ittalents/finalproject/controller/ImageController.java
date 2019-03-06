@@ -1,38 +1,43 @@
 package ittalents.finalproject.controller;
 
-import com.mysql.cj.util.Base64Decoder;
 import ittalents.finalproject.exceptions.BaseException;
+import ittalents.finalproject.exceptions.InvalidInputException;
+import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.User;
-import ittalents.finalproject.model.pojos.dto.ImageUploadDto;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
-import java.awt.*;
 import java.io.*;
-import java.util.Base64;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping(value = "/images")
 public class ImageController extends BaseController {
 
-    private static final String IMAGE_DIR = "D:\\uploads\\";
+    private static final String IMAGE_DIR = "D:" + File.separator + "uploads" + File.separator;
 
     @PostMapping()
-    public void uploadImage(@RequestBody ImageUploadDto dto, HttpSession session) throws IOException, BaseException {
-        User user = (User) session.getAttribute(BaseController.LOGGED_USER);
-        super.validateLoginAdmin(session);
-        String base64 = dto.getImageStr();
-        byte[] bytes = Base64.getDecoder().decode(base64);
-        Long id = user.getId();
-        String fileName = id.intValue() + System.currentTimeMillis() + ".png";
-        dto.setTitle(fileName);
-        File file = new File(IMAGE_DIR + fileName);
-        FileOutputStream fos = new FileOutputStream(file);
-        fos.write(bytes);
-        fos.close();
-//        in petController and ProductController setting the images!!
+    public String uploadImage(@RequestParam MultipartFile img, HttpSession session) throws IOException, BaseException {
+        if(!img.isEmpty()) {
+            User user = (User) session.getAttribute(BaseController.LOGGED_USER);
+            super.validateLoginAdmin(session);
+            byte[] bytes = img.getBytes();
+            Long id = user.getId();
+            String fileName = id.intValue() + System.currentTimeMillis() + ".png";
+            File imgDir = new File(IMAGE_DIR);
+            if(!imgDir.exists()){
+                imgDir.mkdirs();
+            }
+            File file = new File(IMAGE_DIR + fileName);
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(bytes);
+            fos.close();
+
+            return fileName;
+        }
+        throw new InvalidInputException("Image not valid");
     }
 
     @GetMapping(value = "/{image_path}", produces = "image/png")

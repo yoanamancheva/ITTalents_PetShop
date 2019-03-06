@@ -3,7 +3,7 @@ package ittalents.finalproject.controller;
 import ittalents.finalproject.exceptions.BaseException;
 import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.ProductOutOfStockException;
-import ittalents.finalproject.model.pojos.ErrorMsg;
+import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.products.OrderedProduct;
 import ittalents.finalproject.model.pojos.products.Product;
 import ittalents.finalproject.model.pojos.products.ProductInSale;
@@ -55,14 +55,14 @@ public class CartController extends BaseController {
             int previousNumber = (int)session.getAttribute(product.getId() + "_product");
             session.setAttribute(product.getId() + "_product", previousNumber + quantity);
             showCart(session);
-            return new ErrorMsg("You successfully added " + product.getName() + " to your cart",
+            return new Message("You successfully added " + product.getName() + " to your cart",
                                 LocalDateTime.now(), HttpStatus.OK.value());
         }
         else if(product.getQuantity() >= quantity && product.getQuantity() > 0) {
             session.setAttribute(product.getId() + "_product", quantity);
             showCart(session);
 
-            return new ErrorMsg("You successfully added " + product.getName() + " to your cart", LocalDateTime.now(),
+            return new Message("You successfully added " + product.getName() + " to your cart", LocalDateTime.now(),
                                 HttpStatus.OK.value());
         }
         else {
@@ -82,7 +82,7 @@ public class CartController extends BaseController {
 
             session.setAttribute(product.getId() + "_product", previousNumber - quantity);
             showCart(session);
-            return new ErrorMsg("You successfully removed " +quantity +" " + product.getName() + " from your cart",
+            return new Message("You successfully removed " +quantity +" " + product.getName() + " from your cart",
                                 LocalDateTime.now(), HttpStatus.OK.value());
         }
         else {

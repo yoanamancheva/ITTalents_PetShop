@@ -1,7 +1,7 @@
 package ittalents.finalproject.controller;
 
 import ittalents.finalproject.exceptions.*;
-import ittalents.finalproject.model.pojos.ErrorMsg;
+import ittalents.finalproject.model.pojos.Message;
 
 import ittalents.finalproject.model.pojos.products.Product;
 import org.springframework.http.HttpRequest;
@@ -25,46 +25,46 @@ public abstract class BaseController {
 
     @ExceptionHandler({InvalidInputException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public ErrorMsg invalidInput(Exception e) {
-        return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
+    public Message invalidInput(Exception e) {
+        return new Message(e.getMessage(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
     }
 
 
     @ExceptionHandler({ProductNotFoundException.class, PetNotFoundException.class})
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    public ErrorMsg productNotFound(Exception e) {
-        return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.NOT_FOUND.value());
+    public Message productNotFound(Exception e) {
+        return new Message(e.getMessage(), LocalDateTime.now(), HttpStatus.NOT_FOUND.value());
     }
 
     @ExceptionHandler({NotLoggedInException.class, NotLoggedAdminException.class})
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
-    public ErrorMsg notLoggedHandler(Exception e){
-        return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value());
+    public Message notLoggedHandler(Exception e){
+        return new Message(e.getMessage(), LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value());
     }
 
     @ExceptionHandler({ProductOutOfStockException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public ErrorMsg productOutOfStockHandler(Exception e) {
-        return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
+    public Message productOutOfStockHandler(Exception e) {
+        return new Message(e.getMessage(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
     }
 
     @ExceptionHandler({BaseException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public ErrorMsg basedHandler(){
-        return new ErrorMsg(new BaseException("You are trying to input invalid properties. Try again!").getMessage(),
+    public Message basedHandler(){
+        return new Message(new BaseException("You are trying to input invalid properties. Try again!").getMessage(),
                 LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
     }
 
     @ExceptionHandler({SQLException.class})
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorMsg sqlHandler(Exception e) {
-        return new ErrorMsg(e.getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+    public Message sqlHandler(Exception e) {
+        return new Message(e.getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 
 //    @ExceptionHandler({Exception.class})
 //    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-//    public ErrorMsg allExceptionHandler(){
-//        return new ErrorMsg(new Exception("Sorry, the server is temporary down. ").getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+//    public Message allExceptionHandler(){
+//        return new Message(new Exception("Sorry, the server is temporary down. ").getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
 //    }
 
 

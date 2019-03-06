@@ -5,7 +5,7 @@ import ittalents.finalproject.exceptions.ImageCannotBeAddedException;
 import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.PetNotFoundException;
 import ittalents.finalproject.model.dao.PetDao;
-import ittalents.finalproject.model.pojos.ErrorMsg;
+import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.dto.ImageUploadDto;
 import ittalents.finalproject.model.pojos.dto.PetWithPhotosDto;
 import ittalents.finalproject.model.pojos.pets.DiscountPet;
@@ -14,6 +14,7 @@ import ittalents.finalproject.model.pojos.pets.Photo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class PetController extends BaseController {
     private ImageController imgContr;
 
     @PostMapping(value = "/add")
-    public ErrorMsg add(@RequestBody Pet pet, HttpSession session) throws BaseException {
+    public Message add(@RequestBody Pet pet, HttpSession session) throws BaseException {
 
         if(pet.getGender() == null || pet.getGender().equals("") || pet.getAge() < 0 || pet.getAge() > 20
             || pet.getBreed() == null || pet.getBreed().equals("") ||  pet.getSubBreed().equals("")
@@ -45,14 +46,14 @@ public class PetController extends BaseController {
         super.validateLoginAdmin(session);
         dao.addPet(pet);
         System.out.println(pet.toString());
-        return new ErrorMsg("The pet with id " + pet.getId() + " was successfully added", LocalDateTime.now(), HttpStatus.OK.value());
+        return new Message("The pet with id " + pet.getId() + " was successfully added", LocalDateTime.now(), HttpStatus.OK.value());
     }
 
     @GetMapping()
     public Object getAll() throws SQLException {
         List<Pet> pets = dao.getAll();
         if(pets.isEmpty()){
-            return new ErrorMsg("There are no pets for sale", LocalDateTime.now(), HttpStatus.NOT_FOUND.value());
+            return new Message("There are no pets for sale", LocalDateTime.now(), HttpStatus.NOT_FOUND.value());
         }
         else{
             return pets;
@@ -70,11 +71,11 @@ public class PetController extends BaseController {
     }
 
     @DeleteMapping(value = "/remove/{id}")
-    public ErrorMsg removeById(@PathVariable long id, HttpSession session) throws BaseException {
+    public Message removeById(@PathVariable long id, HttpSession session) throws BaseException {
         validateLoginAdmin(session);
         if(id > 0) {
             dao.delete(id);
-            return new ErrorMsg("Successfully deleted pet!", LocalDateTime.now(), HttpStatus.OK.value());
+            return new Message("Successfully deleted pet!", LocalDateTime.now(), HttpStatus.OK.value());
         }
         else{
             throw new PetNotFoundException();
@@ -83,13 +84,13 @@ public class PetController extends BaseController {
 
 
     @PostMapping("/{id}/images")
-    public ErrorMsg setPetImage(@PathVariable("id") long id, @RequestBody ImageUploadDto img, HttpSession ses) throws BaseException, IOException {
+    public Message setPetImage(@PathVariable("id") long id, @RequestParam MultipartFile img, HttpSession ses) throws BaseException, IOException {
         validateLoginAdmin(ses);
-        if(img != null && id > 0) {
-            imgContr.uploadImage(img, ses);
-            Photo photo = new Photo(img.getTitle(), id);
+        if(!img.isEmpty() && id > 0) {
+            String imgTitle = imgContr.uploadImage(img, ses);
+            Photo photo = new Photo(imgTitle, id);
             dao.setImage(photo);
-            return new ErrorMsg("The photo added successfully", LocalDateTime.now(), HttpStatus.OK.value());
+            return new Message("The photo added successfully", LocalDateTime.now(), HttpStatus.OK.value());
         }
         else{
             throw new ImageCannotBeAddedException();
