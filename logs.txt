@@ -1,0 +1,3 @@
+
+50-2019-03-07---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+28-2019-03-07---ERROR-ittalents.finalproject.controller.ProductController:No product found with that id.

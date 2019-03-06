@@ -15,6 +15,7 @@ import ittalents.finalproject.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import java.util.Optional;
 
 @RestController
@@ -32,13 +33,10 @@ public class ReviewController extends BaseController {
     @Autowired
     private UserRepository userRepository;
 
-//    @Autowired
-//    private AddReviewRepository addReviewRepository;
-
 
     @GetMapping("/product/{id}/reviews")
-    public ListProduct getAllInfoForProduct(@PathVariable long id) throws BaseException {
-        return this.productService.getAllInfoForProduct(id);
+    public ListProduct getAllInfoForProduct(@PathVariable long id, HttpSession session) throws BaseException {
+        return this.productService.getAllInfoForProduct(id, session);
     }
 
     @PostMapping("/product/reviews")
