@@ -35,12 +35,5 @@ public class ProductInSaleController extends BaseController {
             }
         }
         return null;
-
-//            if(productInSale.isPresent() && productInSale.get().getStartDate().compareTo(LocalDateTime.now()) < 0
-//                && LocalDateTime.now().compareTo(productInSale.get().getEndDate()) < 0) {
-//                return productInSale.get();
-//            }
-
-//            throw new ProductNotFoundException("There is no in sale product with that id.");
     }
 }

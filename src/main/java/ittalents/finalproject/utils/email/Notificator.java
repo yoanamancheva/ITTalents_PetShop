@@ -17,18 +17,27 @@ public class Notificator extends BaseController {
 
     private List<User> users = new ArrayList<>();
 
+
     public void addObserver(User user) {
         this.users.add(user);
-        System.out.println(users);
     }
 
     public void removeObserver(User user) {
         this.users.remove(user);
     }
 
-    public void sendNews() throws MessagingException {
+    //todo - catch exception
+    public void sendNews() {
+        new Thread(() -> {
         for (User user : this.users) {
-            mailUtil.sendmail(user.getEmail());
-        }
+            new Thread(() -> {
+                try {
+                    mailUtil.sendmail(user.getEmail());
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+
+        }}).start();
     }
 }
