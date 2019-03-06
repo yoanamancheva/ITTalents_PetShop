@@ -2,27 +2,25 @@ package ittalents.finalproject.controller;
 
 import ittalents.finalproject.exceptions.BaseException;
 import ittalents.finalproject.exceptions.InvalidInputException;
-import ittalents.finalproject.exceptions.NotLoggedInException;
 import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.User;
-import ittalents.finalproject.model.dao.UserDAO;
+import ittalents.finalproject.model.pojos.dto.ChangePasswordUserDTO;
 import ittalents.finalproject.model.repos.UserRepository;
 import ittalents.finalproject.utils.email.MailUtil;
 import ittalents.finalproject.utils.email.Notificator;
 import lombok.*;
-import org.omg.CORBA.PRIVATE_MEMBER;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
-import javax.jws.soap.SOAPBinding;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Random;
+
 
 @RestController
 @RequestMapping(value = "users", produces = "application/json")
@@ -55,13 +53,21 @@ public class UserController extends BaseController{
         return user;
     }
 
+    //todo fix better exception
     @GetMapping(value = "register/confirmed")
     public Message confirmedEmail(HttpSession session) {
         User user =(User) session.getAttribute(LOGGED_USER);
         user.setVerified(true);
-        System.out.println("user ??????????????????////" );
-        System.out.println(user);
         userRepository.save(user);
+        new Thread(()-> {
+            try {
+                mailUtil.sendmail(user.getEmail(), MailUtil.SUCCESSFUL_REGISTRATION_SUBJECT,
+                                  MailUtil.SUCCESSFUL_REGISTRATION_CONTENT);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
         return new Message("You successfully confirmed your email address. Enjoy shopping!",
                             LocalDateTime.now(), HttpStatus.OK.value());
     }
@@ -72,6 +78,14 @@ public class UserController extends BaseController{
         user.setAdministrator(true);
         session.setAttribute(LOGGED_USER, user);
         userRepository.save(user);
+        new Thread(() -> {
+            try {
+                mailUtil.sendmail(user.getEmail(), MailUtil.VERIFY_EMAIL_SUBJECT_ADMIN,
+                                  MailUtil.VERIFY_EMAIL_CONTENT_ADMIN);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        }).start();
         return user;
     }
 
@@ -127,6 +141,38 @@ public class UserController extends BaseController{
         throw new InvalidInputException("Wrong username/password");
     }
 
+    //todo deal with exception better
+    @GetMapping(value = "/reset/password/{id}")
+    public Message forgottenPassword(@PathVariable long id, HttpSession session) throws BaseException {
+        if(session.getAttribute(LOGGED_USER) == null) {
+            Optional<User> user = userRepository.findById(id);
+            if (user.isPresent()) {
+                String newPassword = new Random().ints(5, 33, 122)
+                        .collect(StringBuilder::new,
+                                StringBuilder::appendCodePoint, StringBuilder::append)
+                        .toString();
+                new Thread(() -> {
+                    try {
+                        mailUtil.sendmail(user.get().getEmail(), "New password",
+                                  "Hello, this is your new password. \""
+                                          + newPassword + "\"  You can change it anytime after you log in.");
+                    } catch (MessagingException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+
+                user.get().setPassword(newPassword);
+                userRepository.save(user.get());
+                return new Message("Your new password is " + newPassword, LocalDateTime.now(), HttpStatus.OK.value());
+            } else {
+                throw new InvalidInputException("No user found with that id.");
+            }
+        }
+        else {
+            throw new InvalidInputException("You can not reset password while you are logged in.");
+        }
+    }
+
     @PutMapping(value = "profile/delete")
     public Object deleteProfile(@RequestBody User user, HttpSession session)
                                 throws BaseException {
@@ -148,17 +194,24 @@ public class UserController extends BaseController{
     }
 
     @PutMapping(value = "profile/update/password")
-    public Object updatePassword(@RequestBody ChangePasswordUser pendingUser,  HttpSession session) throws BaseException {
+    public Object updatePassword(@RequestBody ChangePasswordUserDTO pendingUser, HttpSession session) throws BaseException {
         validateLogin(session);
         User user = (User)session.getAttribute(LOGGED_USER);
-        System.out.println("?????????????????????????????????");
-        System.out.println(pendingUser);
         if(userRepository.findById(user.getId()).isPresent()) {
             if(user.getPassword().equals(pendingUser.getPassword()) && user.getUsername().equals(pendingUser.getUsername())) {
                 if(!user.getPassword().equals(pendingUser.getNewPassword())) {
                     if (pendingUser.getNewPassword().length() >= 3) {
                         user.setPassword(pendingUser.getNewPassword());
                         userRepository.save(user);
+                        new Thread(()-> {
+                            try {
+                                mailUtil.sendmail(user.getEmail(), MailUtil.SUCCESSFUL_NEW_PASSWORD_SUBJECT,
+                                        MailUtil.SUCCESSFUL_NEW_PASSWORD_CONTENT +
+                                                " Your new password is \"" + pendingUser.getNewPassword());
+                            } catch (MessagingException e) {
+                                e.printStackTrace();
+                            }
+                        }).start();
                         return new Message("You successfully changed your password.", LocalDateTime.now(),
                                             HttpStatus.OK.value());
                     }
@@ -169,20 +222,6 @@ public class UserController extends BaseController{
             throw new InvalidInputException("Wrong username/password. Can not change password.");
         }
         throw new InvalidInputException("No user with that username/password.");
-    }
-
-
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Component
-    @ToString
-    private static class ChangePasswordUser {
-        private String username;
-        private String password;
-        private String newPassword;
     }
 
 

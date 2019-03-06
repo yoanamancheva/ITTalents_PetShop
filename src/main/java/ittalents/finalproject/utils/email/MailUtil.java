@@ -19,6 +19,12 @@ public class MailUtil {
                                                         "\n localhost:8080/users/register/confirmed";
     public static final String VERIFY_EMAIL_SUBJECT = "Verifying email.";
 
+    public static final String VERIFY_EMAIL_CONTENT_ADMIN = "You registered as admin. " +
+                                                            " Please, follow the link and verify your email address." +
+                                                             "\n localhost:8080/users/register/confirmed";
+    public static final String VERIFY_EMAIL_SUBJECT_ADMIN = "Verifying email - admin.";
+
+
     //todo add link to promotions dto
     public static final String NEW_PROMOTIONS_PRODUCTS_CONTENT = "Hey, we have great new product promotions. Check them here.";
     public static final String NEW_PROMOTIONS_SUBJECT = "New product promotions.";
@@ -27,8 +33,13 @@ public class MailUtil {
     public static final String NEW_PROMOTIONS_PETS_CONTENT = "Hey, we have great new pet promotions. Check them here.";
     public static final String NEW_PROMOTIONS_PETS_SUBJECT = "New pet promotions.";
 
-    public static final String SUCCESSFUL_REGISTRATION_CONTENT = "You successfully confirm your email address.";
+    public static final String SUCCESSFUL_REGISTRATION_CONTENT = "You successfully confirm your email address." +
+                                                                 " Enjoy shopping.";
     public static final String SUCCESSFUL_REGISTRATION_SUBJECT = "Confirmed email address.";
+
+    public static final String SUCCESSFUL_NEW_PASSWORD_CONTENT = "You successfully changed your password." +
+            " Enjoy shopping.";
+    public static final String SUCCESSFUL_NEW_PASSWORD_SUBJECT = "New password.";
 
 
 
