@@ -23,6 +23,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static ittalents.finalproject.utils.email.MailUtil.NEW_PROMOTIONS_PRODUCTS_CONTENT;
+import static ittalents.finalproject.utils.email.MailUtil.NEW_PROMOTIONS_SUBJECT;
+
 @RestController
 public class ProductController extends BaseController {
 
@@ -126,7 +129,7 @@ public class ProductController extends BaseController {
                 throw new InvalidInputException("The start date can not be after the end date.");
             }
             productInSaleRepository.save(productInSale);
-            notificator.sendNews();
+            notificator.sendNews(NEW_PROMOTIONS_SUBJECT, NEW_PROMOTIONS_PRODUCTS_CONTENT);
             return productInSale;
         }
         else {

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
 import javax.jws.soap.SOAPBinding;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -33,15 +34,36 @@ public class UserController extends BaseController{
     @Autowired
     private Notificator notificator;
 
+    @Autowired
+    private MailUtil mailUtil;
+
     @PostMapping(value = "register")
-    public User addUser(@RequestBody User user, HttpSession session) throws BaseException{
+    public User addUser(@RequestBody User user, HttpSession session) throws BaseException {
         validateUserInput(user);
         if(user.isNotifications()) {
             notificator.addObserver(user);
         }
         userRepository.save(user);
+        new Thread(() -> {
+            try {
+                mailUtil.sendmail(user.getEmail(), MailUtil.VERIFY_EMAIL_SUBJECT, MailUtil.VERIFY_EMAIL_CONTENT);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        }).start();
         session.setAttribute(LOGGED_USER, user);
         return user;
+    }
+
+    @GetMapping(value = "register/confirmed")
+    public Message confirmedEmail(HttpSession session) {
+        User user =(User) session.getAttribute(LOGGED_USER);
+        user.setVerified(true);
+        System.out.println("user ??????????????????////" );
+        System.out.println(user);
+        userRepository.save(user);
+        return new Message("You successfully confirmed your email address. Enjoy shopping!",
+                            LocalDateTime.now(), HttpStatus.OK.value());
     }
 
     @PostMapping(value = "register/admin")
