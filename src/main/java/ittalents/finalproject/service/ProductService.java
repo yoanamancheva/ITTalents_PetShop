@@ -1,16 +1,14 @@
 package ittalents.finalproject.service;
 
-import ittalents.finalproject.exceptions.InvalidInputException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
 
 import ittalents.finalproject.model.pojos.dto.ListProduct;
 import ittalents.finalproject.model.pojos.dto.ListReview;
-import ittalents.finalproject.model.pojos.dto.ProductReviewsDTO;
 import ittalents.finalproject.model.pojos.products.Product;
 import ittalents.finalproject.model.repos.ProductRepository;
 import ittalents.finalproject.model.repos.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.stream.Collectors;

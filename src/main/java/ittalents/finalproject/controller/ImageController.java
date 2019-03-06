@@ -1,16 +1,13 @@
 package ittalents.finalproject.controller;
 
-import ittalents.finalproject.exceptions.BaseException;
-import ittalents.finalproject.exceptions.InvalidInputException;
-import ittalents.finalproject.model.pojos.Message;
+import ittalents.finalproject.util.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.model.pojos.User;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.*;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping(value = "/images")

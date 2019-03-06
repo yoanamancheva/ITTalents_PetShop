@@ -1,7 +1,6 @@
 package ittalents.finalproject.controller;
 
-import ittalents.finalproject.exceptions.BaseException;
-import ittalents.finalproject.model.pojos.products.Product;
+import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.model.pojos.products.ProductInSale;
 import ittalents.finalproject.model.repos.ProductInSaleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController

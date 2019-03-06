@@ -1,8 +1,8 @@
 package ittalents.finalproject.controller;
 
 
-import ittalents.finalproject.exceptions.BaseException;
-import ittalents.finalproject.exceptions.InvalidInputException;
+import ittalents.finalproject.util.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.model.pojos.Review;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.pojos.dto.AddReviewDTO;
@@ -15,7 +15,6 @@ import ittalents.finalproject.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpSession;
 import java.util.Optional;
 
 @RestController

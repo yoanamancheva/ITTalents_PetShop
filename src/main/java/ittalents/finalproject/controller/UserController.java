@@ -1,18 +1,18 @@
 package ittalents.finalproject.controller;
 
-import ittalents.finalproject.exceptions.BaseException;
-import ittalents.finalproject.exceptions.InvalidInputException;
+import ittalents.finalproject.util.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.pojos.dto.ChangePasswordUserDTO;
 import ittalents.finalproject.model.repos.UserRepository;
-import ittalents.finalproject.utils.email.MailUtil;
-import ittalents.finalproject.utils.email.Notificator;
-import lombok.*;
+import ittalents.finalproject.util.exceptions.UserNotFoundException;
+import ittalents.finalproject.util.mail.MailUtil;
+import ittalents.finalproject.util.mail.Notificator;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
@@ -25,6 +25,9 @@ import java.util.Random;
 @RestController
 @RequestMapping(value = "users", produces = "application/json")
 public class UserController extends BaseController{
+
+    static Logger log = Logger.getLogger(UserController.class.getName());
+
 
     @Autowired
     private UserRepository userRepository;
@@ -47,6 +50,7 @@ public class UserController extends BaseController{
                 mailUtil.sendmail(user.getEmail(), MailUtil.VERIFY_EMAIL_SUBJECT, MailUtil.VERIFY_EMAIL_CONTENT);
             } catch (MessagingException e) {
                 e.printStackTrace();
+                log.error(e.getMessage());
             }
         }).start();
         session.setAttribute(LOGGED_USER, user);
@@ -65,6 +69,7 @@ public class UserController extends BaseController{
                                   MailUtil.SUCCESSFUL_REGISTRATION_CONTENT);
             } catch (MessagingException e) {
                 e.printStackTrace();
+                log.error(e.getMessage());
             }
         }).start();
 
@@ -84,6 +89,7 @@ public class UserController extends BaseController{
                                   MailUtil.VERIFY_EMAIL_CONTENT_ADMIN);
             } catch (MessagingException e) {
                 e.printStackTrace();
+                log.error(e.getMessage());
             }
         }).start();
         return user;
@@ -105,7 +111,7 @@ public class UserController extends BaseController{
         validateNullInput(user);
         user.setPassword(user.getPassword().trim());
         user.setPassword2(user.getPassword2().trim());
-        if ( getUserByName(newUsername) != null ) {
+        if (getUserByName(newUsername) != null) {
             throw new InvalidInputException("This username is already used by another user.");
         }
         else if( getUserByEmail(newEmail) != null) {
@@ -133,10 +139,12 @@ public class UserController extends BaseController{
         if(session.getAttribute(LOGGED_USER) != null) {
             throw new InvalidInputException("You are already logged in.");
         }
-        if(getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
-            getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
-            session.setAttribute(LOGGED_USER, getUserByName(pendingUsername));
-            return new Message("You logged successfully.", LocalDateTime.now(), 200);
+        if(getUserByName(pendingUsername) != null ) {
+            if (getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
+                    getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
+                session.setAttribute(LOGGED_USER, getUserByName(pendingUsername));
+                return new Message("You logged successfully.", LocalDateTime.now(), 200);
+            }
         }
         throw new InvalidInputException("Wrong username/password");
     }
@@ -158,6 +166,7 @@ public class UserController extends BaseController{
                                           + newPassword + "\"  You can change it anytime after you log in.");
                     } catch (MessagingException e) {
                         e.printStackTrace();
+                        log.error(e.getMessage());
                     }
                 }).start();
 
@@ -210,6 +219,7 @@ public class UserController extends BaseController{
                                                 " Your new password is \"" + pendingUser.getNewPassword());
                             } catch (MessagingException e) {
                                 e.printStackTrace();
+                                log.error(e.getMessage());
                             }
                         }).start();
                         return new Message("You successfully changed your password.", LocalDateTime.now(),
@@ -237,12 +247,20 @@ public class UserController extends BaseController{
         }
     }
 
-    private User getUserByName(String username) {
-        return userRepository.findByUsername(username);
+    private User getUserByName(String username) throws BaseException{
+        Optional<User> user = userRepository.findByUsername(username);
+        if(user.isPresent()) {
+            return user.get();
+        }
+        return null;
     }
 
     private User getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        Optional<User> user = userRepository.findByEmail(email);
+        if(user.isPresent()) {
+            return user.get();
+        }
+        return null;
     }
 
 

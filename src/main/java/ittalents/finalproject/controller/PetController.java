@@ -1,15 +1,12 @@
 package ittalents.finalproject.controller;
 
-import ittalents.finalproject.exceptions.BaseException;
-import ittalents.finalproject.exceptions.ImageCannotBeAddedException;
-import ittalents.finalproject.exceptions.InvalidInputException;
-import ittalents.finalproject.exceptions.PetNotFoundException;
+import ittalents.finalproject.util.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.ImageCannotBeAddedException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
+import ittalents.finalproject.util.exceptions.PetNotFoundException;
 import ittalents.finalproject.model.dao.PetDao;
 import ittalents.finalproject.model.pojos.Message;
-import ittalents.finalproject.model.pojos.dto.ImageUploadDto;
-import ittalents.finalproject.model.pojos.dto.PetForSaleDto;
 import ittalents.finalproject.model.pojos.dto.PetWithPhotosDto;
-import ittalents.finalproject.model.pojos.pets.DiscountPet;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import ittalents.finalproject.model.pojos.pets.Photo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
-import javax.websocket.server.PathParam;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.LinkedList;
 import java.util.List;
 
 @RestController

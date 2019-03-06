@@ -1,4 +1,4 @@
-package ittalents.finalproject.utils.email;
+package ittalents.finalproject.util.mail;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;

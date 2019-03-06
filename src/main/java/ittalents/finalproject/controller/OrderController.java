@@ -1,6 +1,6 @@
 package ittalents.finalproject.controller;
 
-import ittalents.finalproject.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.pojos.orders.FinalOrderProducts;
 import ittalents.finalproject.model.pojos.products.OrderedProduct;
@@ -9,17 +9,14 @@ import ittalents.finalproject.model.pojos.products.ProductInSale;
 import ittalents.finalproject.model.repos.FinalOrderProductRepository;
 import ittalents.finalproject.model.repos.OrderedProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
 
 @RestController
 public class OrderController  extends BaseController{

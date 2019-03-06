@@ -1,13 +1,10 @@
 package ittalents.finalproject.controller;
 
-import ittalents.finalproject.exceptions.BaseException;
-import ittalents.finalproject.exceptions.InvalidInputException;
-import ittalents.finalproject.exceptions.ProductOutOfStockException;
+import ittalents.finalproject.util.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
+import ittalents.finalproject.util.exceptions.ProductOutOfStockException;
 import ittalents.finalproject.model.pojos.Message;
-import ittalents.finalproject.model.pojos.products.OrderedProduct;
 import ittalents.finalproject.model.pojos.products.Product;
-import ittalents.finalproject.model.pojos.products.ProductInSale;
-import ittalents.finalproject.model.repos.OrderedProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

@@ -1,7 +1,7 @@
 package ittalents.finalproject.controller;
 
-import ittalents.finalproject.exceptions.InvalidInputException;
-import ittalents.finalproject.exceptions.PetNotFoundException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
+import ittalents.finalproject.util.exceptions.PetNotFoundException;
 import ittalents.finalproject.model.dao.PetDao;
 import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.dto.PetForSaleDto;
