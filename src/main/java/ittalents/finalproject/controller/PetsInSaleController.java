@@ -15,7 +15,8 @@ import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@RestController(value = "/pets")
+@RestController()
+@RequestMapping(value = "/pets")
 public class PetsInSaleController extends BaseController {
 
     @Autowired
