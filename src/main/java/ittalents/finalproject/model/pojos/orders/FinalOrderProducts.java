@@ -1,5 +1,6 @@
 package ittalents.finalproject.model.pojos.orders;
 
+import ittalents.finalproject.model.pojos.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

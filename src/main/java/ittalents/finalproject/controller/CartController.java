@@ -34,7 +34,6 @@ public class CartController extends BaseController {
 
     private void showCart(HttpSession session) {
         Enumeration<String> attributes = session.getAttributeNames();
-        System.out.println("=========================================================================");
         while ((attributes.hasMoreElements())) {
             String attribute = attributes.nextElement();
             System.out.println(attribute + " : " + session.getAttribute(attribute));
@@ -44,7 +43,6 @@ public class CartController extends BaseController {
     @PostMapping(value = "cart/add/{id}/{quantity}")
     public Object addProductsToCart(@PathVariable("id") long id, @PathVariable("quantity") int quantity, HttpSession session)
                                     throws BaseException{
-        System.out.println("-----------------------------------------");
         System.out.println(session.getAttribute(LOGGED_USER));
         validateLogin(session);
         Product product = productController.getById(id, session);

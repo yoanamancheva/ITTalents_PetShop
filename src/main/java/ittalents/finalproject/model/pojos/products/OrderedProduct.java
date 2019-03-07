@@ -39,8 +39,10 @@ public class OrderedProduct implements Serializable{
     @Setter
     @Embeddable
     public static class OrderedProductPk implements Serializable {
+
         @Column (name = "order_id")
         protected Long orderId;
+
         @Column(name = "product_id")
         protected Long productId;
 
