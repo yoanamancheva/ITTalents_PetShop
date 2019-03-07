@@ -1,6 +1,7 @@
 package ittalents.finalproject.controller;
 
 
+import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.pojos.dto.ShowFavouriteProductsDTO;
 import ittalents.finalproject.model.pojos.products.FavouriteProduct;
@@ -11,12 +12,14 @@ import ittalents.finalproject.model.repos.UserRepository;
 import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +36,7 @@ public class FavouriteProductController extends BaseController{
     private FavouriteProductRepository favouriteProductRepository;
 
     @PostMapping(value = "products/favourites/add")
-    public void addProductToFavourite(@RequestParam("id") long id, HttpSession session) throws BaseException {
+    public Object addProductToFavourite(@RequestParam("id") long id, HttpSession session) throws BaseException {
         validateLogin(session);
         User user = (User)session.getAttribute(LOGGED_USER);
         Optional<Product> product = productRepository.findById(id);
@@ -46,6 +49,8 @@ public class FavouriteProductController extends BaseController{
 
             favouriteProduct.setFavouriteProductPK(pk);
             favouriteProductRepository.save(favouriteProduct);
+            return new Message("Product with id " + id + " was successfully added to user's favourites.",
+                    LocalDateTime.now(), HttpStatus.OK.value());
         }
         else {
             throw new ProductNotFoundException("No product with that id found. You cannot add it to favourites.");
@@ -53,7 +58,7 @@ public class FavouriteProductController extends BaseController{
     }
 
     @PostMapping(value = "products/favourites/remove")
-    public void removeProductFromFavourite(@RequestParam("id") long id, HttpSession session) throws BaseException{
+    public Message removeProductFromFavourite(@RequestParam("id") long id, HttpSession session) throws BaseException{
         validateLogin(session);
         User user = (User)session.getAttribute(LOGGED_USER);
 
@@ -61,6 +66,10 @@ public class FavouriteProductController extends BaseController{
             Optional<FavouriteProduct> product = favouriteProductRepository.findByFavouriteProductPK(user.getId(), id);
             if(product.isPresent()) {
                 favouriteProductRepository.delete(product.get());
+                return new Message("Product with id " + id + " was successfully removed from favourites.",
+                                    LocalDateTime.now(), HttpStatus.OK.value());
+            } else {
+                throw  new ProductNotFoundException("No product with that id found in user's favourites.");
             }
         }
         else {

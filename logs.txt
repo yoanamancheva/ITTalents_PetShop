@@ -4,3 +4,30 @@
 36-2019-03-07---ERROR-ittalents.finalproject.controller.ProductController:No products found containing that name.
 50-2019-03-07---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
 50-2019-03-07---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:This username is already used by another user.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:This username is already used by another user.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You are already logged in.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:This username is already used by another user.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You are already logged in.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:ebi se
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You are already logged in.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:ebi se
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Invalid input format.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Invalid input format.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Invalid input format.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Wrong username/password
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Username/password should not be empty.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Username/password should not be empty.
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Wrong email/password. Can not delete profile.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Wrong email/password. Can not delete profile.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Wrong email/password. Can not delete profile.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You are already logged in.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You can not reset password while you are logged in.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:No user found with that id.
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
