@@ -1,5 +1,7 @@
 package ittalents.finalproject.controller;
 
+
+import com.mysql.cj.xdevapi.SessionFactory;
 import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.util.exceptions.ProductNotFoundException;
@@ -10,6 +12,8 @@ import ittalents.finalproject.model.repos.ProductInSaleRepository;
 import ittalents.finalproject.model.repos.ProductRepository;
 import ittalents.finalproject.service.ProductService;
 import ittalents.finalproject.util.mail.Notificator;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +38,24 @@ public class ProductController extends BaseController {
 
     @Autowired
     private Notificator notificator;
+
+    @GetMapping(value = "/products/search/{name}")
+    public List<Product> findProducts(@PathVariable("name") String name) throws BaseException{
+        List<Product> products = productRepository.search(name);
+        if(products.isEmpty()) {
+            throw new ProductNotFoundException("No products found containing that name.");
+        }
+        return products;
+    }
+
+    @GetMapping(value = "/products/sort/price")
+    public List<Product> sortByPrice() throws BaseException{
+        List<Product> products = productRepository.sortByPrice();
+        if(products.isEmpty()) {
+            throw new ProductNotFoundException("No products found.");
+        }
+        return products;
+    }
 
     @GetMapping(value = "/products")
     public List<Product> getAll(HttpSession session) throws BaseException {
