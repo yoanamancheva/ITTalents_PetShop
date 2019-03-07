@@ -1,18 +1,22 @@
 package ittalents.finalproject.service;
 
-import ittalents.finalproject.exceptions.InvalidInputException;
+import ittalents.finalproject.controller.ProductInSaleController;
+import ittalents.finalproject.model.pojos.products.ProductInSale;
+import ittalents.finalproject.util.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
 
 import ittalents.finalproject.model.pojos.dto.ListProduct;
 import ittalents.finalproject.model.pojos.dto.ListReview;
-import ittalents.finalproject.model.pojos.dto.ProductReviewsDTO;
 import ittalents.finalproject.model.pojos.products.Product;
 import ittalents.finalproject.model.repos.ProductRepository;
 import ittalents.finalproject.model.repos.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +27,9 @@ public class ProductService {
 
     @Autowired
     private ReviewRepository reviewRepository;
+
+    @Autowired
+    private ProductInSaleController productInSaleController;
 
 
 
@@ -35,21 +42,30 @@ public class ProductService {
     }
 
 
-    public ListProduct getAllInfoForProduct(long id) throws InvalidInputException {
+    public ListProduct getAllInfoForProduct(long id, HttpSession session) throws BaseException {
+        ProductInSale productInSale = productInSaleController.getProductInSaleByProductId(id, session);
+        Optional<Product> product = productRepository.findById(id);
 
-        if(this.productRepository.findById(id).isPresent()) {
-            Product p = this.productRepository.findById(id).get();
-            List<ListReview> reviews = getReviewsForProduct(id);
+            if(product.isPresent()) {
+                if( productInSale != null) {
+                    product.get().setPrice(productInSale.getDiscountPrice());
+                }
 
-            ListProduct productReviews = new ListProduct(p.getId(), p.getName(), p.getDescription());
-            productReviews.addReviews(reviews);
+//                Product p = this.productRepository.findById(id).get();
+                List<ListReview> reviews = getReviewsForProduct(id);
 
-            return productReviews;
+                ListProduct productReviews = new ListProduct(product.get().getId(), product.get().getName(),
+                                                             product.get().getDescription(), product.get().getPrice());
+                productReviews.addReviews(reviews);
+
+                return productReviews;
+
         }
         else {
             throw new InvalidInputException("No product found with that id.");
         }
     }
+
 
 
     //!!!!

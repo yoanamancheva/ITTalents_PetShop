@@ -1,4 +1,4 @@
-package ittalents.finalproject.exceptions;
+package ittalents.finalproject.util.exceptions;
 
 public class InvalidInputException extends BaseException {
     public InvalidInputException(String message) {

@@ -30,6 +30,7 @@ public class User {
     private String email;
     private boolean administrator;
     private boolean notifications;
+    private boolean verified;
 
 
 //    @JoinColumn(name="id",referencedColumnName="user_id")
@@ -44,6 +45,7 @@ public class User {
         this.email = email;
         this.administrator = false;
         this.notifications = notifications;
+        this.verified = false;
     }
 
 }

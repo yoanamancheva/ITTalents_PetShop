@@ -1,8 +1,8 @@
 package ittalents.finalproject.controller;
 
 
-import ittalents.finalproject.exceptions.BaseException;
-import ittalents.finalproject.exceptions.InvalidInputException;
+import ittalents.finalproject.util.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.model.pojos.Review;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.pojos.dto.AddReviewDTO;
@@ -33,13 +33,10 @@ public class ReviewController extends BaseController {
     @Autowired
     private UserRepository userRepository;
 
-//    @Autowired
-//    private AddReviewRepository addReviewRepository;
-
 
     @GetMapping("/product/{id}/reviews")
-    public ListProduct getAllInfoForProduct(@PathVariable long id) throws BaseException {
-        return this.productService.getAllInfoForProduct(id);
+    public ListProduct getAllInfoForProduct(@PathVariable long id, HttpSession session) throws BaseException {
+        return this.productService.getAllInfoForProduct(id, session);
     }
 
     @PostMapping("/product/reviews")

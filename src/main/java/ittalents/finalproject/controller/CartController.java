@@ -1,5 +1,6 @@
 package ittalents.finalproject.controller;
 
+<<<<<<< HEAD
 import ittalents.finalproject.exceptions.BaseException;
 import ittalents.finalproject.exceptions.InvalidInputException;
 import ittalents.finalproject.exceptions.PetOutOfStockException;
@@ -10,9 +11,13 @@ import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.pojos.dto.CartContentDto;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import ittalents.finalproject.model.pojos.products.OrderedProduct;
+=======
+import ittalents.finalproject.util.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
+import ittalents.finalproject.util.exceptions.ProductOutOfStockException;
+import ittalents.finalproject.model.pojos.Message;
+>>>>>>> 0bff1b1de9bc32c632946831ecef9d5661596872
 import ittalents.finalproject.model.pojos.products.Product;
-import ittalents.finalproject.model.pojos.products.ProductInSale;
-import ittalents.finalproject.model.repos.OrderedProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -51,17 +56,22 @@ public class CartController extends BaseController {
 
     private void showCart(HttpSession session) {
         Enumeration<String> attributes = session.getAttributeNames();
-        System.out.println("=========================================================================");
         while ((attributes.hasMoreElements())) {
             String attribute = attributes.nextElement();
             System.out.println(attribute + " : " + session.getAttribute(attribute));
         }
     }
 
+<<<<<<< HEAD
     @PostMapping(value = "cart/add/products/{id}")
     public Object addProductsToCart(@PathVariable("id") long id, @RequestParam("quantity") int quantity,
                                      HttpSession session) throws BaseException{
         System.out.println("-----------------------------------------");
+=======
+    @PostMapping(value = "cart/add/{id}/{quantity}")
+    public Object addProductsToCart(@PathVariable("id") long id, @PathVariable("quantity") int quantity, HttpSession session)
+                                    throws BaseException{
+>>>>>>> 0bff1b1de9bc32c632946831ecef9d5661596872
         System.out.println(session.getAttribute(LOGGED_USER));
         validateLogin(session);
         Product product = productController.getById(id, session);

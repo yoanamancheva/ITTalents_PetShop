@@ -21,12 +21,14 @@ public class ListProduct {
     private long id;
     private String productName;
     private String description;
+    private double price;
     private List<ListReview> reviews;
 
-    public ListProduct(long id, String productName, String description) {
+    public ListProduct(long id, String productName, String description, double price) {
         this.id = id;
         this.productName = productName;
         this.description = description;
+        this.price = price;
     }
 
     public void addReviews(List<ListReview> reviews) {

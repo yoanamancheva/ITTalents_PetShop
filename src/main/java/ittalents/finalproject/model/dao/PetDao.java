@@ -1,25 +1,18 @@
 package ittalents.finalproject.model.dao;
 
-import com.mysql.cj.util.StringUtils;
-import ittalents.finalproject.exceptions.PetNotFoundException;
-import ittalents.finalproject.model.pojos.Message;
-import ittalents.finalproject.model.pojos.dto.ImageUploadDto;
 import ittalents.finalproject.model.pojos.dto.PetForSaleDto;
 import ittalents.finalproject.model.pojos.dto.PetWithPhotosDto;
 import ittalents.finalproject.model.pojos.pets.DiscountPet;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import ittalents.finalproject.model.pojos.pets.Photo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.util.LinkedList;
 import java.util.List;
 
 @Component

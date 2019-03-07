@@ -1,27 +1,30 @@
 package ittalents.finalproject.controller;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
-import ittalents.finalproject.exceptions.BaseException;
-import ittalents.finalproject.exceptions.InvalidInputException;
-import ittalents.finalproject.exceptions.NotLoggedInException;
-import ittalents.finalproject.exceptions.ProductNotFoundException;
+
+import com.mysql.cj.xdevapi.SessionFactory;
+import ittalents.finalproject.util.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
+import ittalents.finalproject.util.exceptions.ProductNotFoundException;
 import ittalents.finalproject.model.pojos.Message;
-import ittalents.finalproject.model.pojos.dto.ProductReviewsDTO;
 import ittalents.finalproject.model.pojos.products.Product;
 import ittalents.finalproject.model.pojos.products.ProductInSale;
 import ittalents.finalproject.model.repos.ProductInSaleRepository;
 import ittalents.finalproject.model.repos.ProductRepository;
 import ittalents.finalproject.service.ProductService;
-import ittalents.finalproject.utils.email.Notificator;
+import ittalents.finalproject.util.mail.Notificator;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import static ittalents.finalproject.util.mail.MailUtil.NEW_PROMOTIONS_PRODUCTS_CONTENT;
+import static ittalents.finalproject.util.mail.MailUtil.NEW_PROMOTIONS_SUBJECT;
 
 @RestController
 public class ProductController extends BaseController {
@@ -36,10 +39,32 @@ public class ProductController extends BaseController {
     @Autowired
     private Notificator notificator;
 
+    @GetMapping(value = "/products/search/{name}")
+    public List<Product> findProducts(@PathVariable("name") String name) throws BaseException{
+        List<Product> products = productRepository.search(name);
+        if(products.isEmpty()) {
+            throw new ProductNotFoundException("No products found containing that name.");
+        }
+        return products;
+    }
+
+    @GetMapping(value = "/products/sort/price")
+    public List<Product> sortByPrice() throws BaseException{
+        List<Product> products = productRepository.sortByPrice();
+        if(products.isEmpty()) {
+            throw new ProductNotFoundException("No products found.");
+        }
+        return products;
+    }
+
     @GetMapping(value = "/products")
     public List<Product> getAll(HttpSession session) throws BaseException {
         validateLogin(session);
-        return productRepository.findAll();
+        List<Product> allProducts = productRepository.findAll();
+        if(allProducts.isEmpty()) {
+            throw new ProductNotFoundException("No products found.");
+        }
+        return allProducts;
     }
 
 
@@ -126,7 +151,7 @@ public class ProductController extends BaseController {
                 throw new InvalidInputException("The start date can not be after the end date.");
             }
             productInSaleRepository.save(productInSale);
-            notificator.sendNews();
+            notificator.sendNews(NEW_PROMOTIONS_SUBJECT, NEW_PROMOTIONS_PRODUCTS_CONTENT);
             return productInSale;
         }
         else {

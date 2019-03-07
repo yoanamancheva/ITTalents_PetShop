@@ -1,31 +1,33 @@
 package ittalents.finalproject.controller;
 
-import ittalents.finalproject.exceptions.BaseException;
-import ittalents.finalproject.exceptions.InvalidInputException;
-import ittalents.finalproject.exceptions.NotLoggedInException;
+import ittalents.finalproject.util.exceptions.BaseException;
+import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.User;
-import ittalents.finalproject.model.dao.UserDAO;
+import ittalents.finalproject.model.pojos.dto.ChangePasswordUserDTO;
 import ittalents.finalproject.model.repos.UserRepository;
-import ittalents.finalproject.utils.email.MailUtil;
-import ittalents.finalproject.utils.email.Notificator;
-import lombok.*;
-import org.omg.CORBA.PRIVATE_MEMBER;
+import ittalents.finalproject.util.exceptions.UserNotFoundException;
+import ittalents.finalproject.util.mail.MailUtil;
+import ittalents.finalproject.util.mail.Notificator;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
-import javax.jws.soap.SOAPBinding;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Random;
+
 
 @RestController
 @RequestMapping(value = "users", produces = "application/json")
 public class UserController extends BaseController{
+
+    static Logger log = Logger.getLogger(UserController.class.getName());
+
 
     @Autowired
     private UserRepository userRepository;
@@ -33,15 +35,46 @@ public class UserController extends BaseController{
     @Autowired
     private Notificator notificator;
 
+    @Autowired
+    private MailUtil mailUtil;
+
     @PostMapping(value = "register")
-    public User addUser(@RequestBody User user, HttpSession session) throws BaseException{
+    public User addUser(@RequestBody User user, HttpSession session) throws BaseException {
         validateUserInput(user);
         if(user.isNotifications()) {
             notificator.addObserver(user);
         }
         userRepository.save(user);
+        new Thread(() -> {
+            try {
+                mailUtil.sendmail(user.getEmail(), MailUtil.VERIFY_EMAIL_SUBJECT, MailUtil.VERIFY_EMAIL_CONTENT);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                log.error(e.getMessage());
+            }
+        }).start();
         session.setAttribute(LOGGED_USER, user);
         return user;
+    }
+
+    //todo fix better exception
+    @GetMapping(value = "register/confirmed")
+    public Message confirmedEmail(HttpSession session) {
+        User user =(User) session.getAttribute(LOGGED_USER);
+        user.setVerified(true);
+        userRepository.save(user);
+        new Thread(()-> {
+            try {
+                mailUtil.sendmail(user.getEmail(), MailUtil.SUCCESSFUL_REGISTRATION_SUBJECT,
+                                  MailUtil.SUCCESSFUL_REGISTRATION_CONTENT);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                log.error(e.getMessage());
+            }
+        }).start();
+
+        return new Message("You successfully confirmed your email address. Enjoy shopping!",
+                            LocalDateTime.now(), HttpStatus.OK.value());
     }
 
     @PostMapping(value = "register/admin")
@@ -50,6 +83,15 @@ public class UserController extends BaseController{
         user.setAdministrator(true);
         session.setAttribute(LOGGED_USER, user);
         userRepository.save(user);
+        new Thread(() -> {
+            try {
+                mailUtil.sendmail(user.getEmail(), MailUtil.VERIFY_EMAIL_SUBJECT_ADMIN,
+                                  MailUtil.VERIFY_EMAIL_CONTENT_ADMIN);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                log.error(e.getMessage());
+            }
+        }).start();
         return user;
     }
 
@@ -69,7 +111,7 @@ public class UserController extends BaseController{
         validateNullInput(user);
         user.setPassword(user.getPassword().trim());
         user.setPassword2(user.getPassword2().trim());
-        if ( getUserByName(newUsername) != null ) {
+        if (getUserByName(newUsername) != null) {
             throw new InvalidInputException("This username is already used by another user.");
         }
         else if( getUserByEmail(newEmail) != null) {
@@ -97,12 +139,47 @@ public class UserController extends BaseController{
         if(session.getAttribute(LOGGED_USER) != null) {
             throw new InvalidInputException("You are already logged in.");
         }
-        if(getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
-            getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
-            session.setAttribute(LOGGED_USER, getUserByName(pendingUsername));
-            return new Message("You logged successfully.", LocalDateTime.now(), 200);
+        if(getUserByName(pendingUsername) != null ) {
+            if (getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
+                    getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
+                session.setAttribute(LOGGED_USER, getUserByName(pendingUsername));
+                return new Message("You logged successfully.", LocalDateTime.now(), 200);
+            }
         }
         throw new InvalidInputException("Wrong username/password");
+    }
+
+    //todo deal with exception better
+    @GetMapping(value = "/reset/password/{id}")
+    public Message forgottenPassword(@PathVariable long id, HttpSession session) throws BaseException {
+        if(session.getAttribute(LOGGED_USER) == null) {
+            Optional<User> user = userRepository.findById(id);
+            if (user.isPresent()) {
+                String newPassword = new Random().ints(5, 33, 122)
+                        .collect(StringBuilder::new,
+                                StringBuilder::appendCodePoint, StringBuilder::append)
+                        .toString();
+                new Thread(() -> {
+                    try {
+                        mailUtil.sendmail(user.get().getEmail(), "New password",
+                                  "Hello, this is your new password. \""
+                                          + newPassword + "\"  You can change it anytime after you log in.");
+                    } catch (MessagingException e) {
+                        e.printStackTrace();
+                        log.error(e.getMessage());
+                    }
+                }).start();
+
+                user.get().setPassword(newPassword);
+                userRepository.save(user.get());
+                return new Message("Your new password is " + newPassword, LocalDateTime.now(), HttpStatus.OK.value());
+            } else {
+                throw new InvalidInputException("No user found with that id.");
+            }
+        }
+        else {
+            throw new InvalidInputException("You can not reset password while you are logged in.");
+        }
     }
 
     @PutMapping(value = "profile/delete")
@@ -126,17 +203,25 @@ public class UserController extends BaseController{
     }
 
     @PutMapping(value = "profile/update/password")
-    public Object updatePassword(@RequestBody ChangePasswordUser pendingUser,  HttpSession session) throws BaseException {
+    public Object updatePassword(@RequestBody ChangePasswordUserDTO pendingUser, HttpSession session) throws BaseException {
         validateLogin(session);
         User user = (User)session.getAttribute(LOGGED_USER);
-        System.out.println("?????????????????????????????????");
-        System.out.println(pendingUser);
         if(userRepository.findById(user.getId()).isPresent()) {
             if(user.getPassword().equals(pendingUser.getPassword()) && user.getUsername().equals(pendingUser.getUsername())) {
                 if(!user.getPassword().equals(pendingUser.getNewPassword())) {
                     if (pendingUser.getNewPassword().length() >= 3) {
                         user.setPassword(pendingUser.getNewPassword());
                         userRepository.save(user);
+                        new Thread(()-> {
+                            try {
+                                mailUtil.sendmail(user.getEmail(), MailUtil.SUCCESSFUL_NEW_PASSWORD_SUBJECT,
+                                        MailUtil.SUCCESSFUL_NEW_PASSWORD_CONTENT +
+                                                " Your new password is \"" + pendingUser.getNewPassword());
+                            } catch (MessagingException e) {
+                                e.printStackTrace();
+                                log.error(e.getMessage());
+                            }
+                        }).start();
                         return new Message("You successfully changed your password.", LocalDateTime.now(),
                                             HttpStatus.OK.value());
                     }
@@ -147,20 +232,6 @@ public class UserController extends BaseController{
             throw new InvalidInputException("Wrong username/password. Can not change password.");
         }
         throw new InvalidInputException("No user with that username/password.");
-    }
-
-
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Component
-    @ToString
-    private static class ChangePasswordUser {
-        private String username;
-        private String password;
-        private String newPassword;
     }
 
 
@@ -176,12 +247,20 @@ public class UserController extends BaseController{
         }
     }
 
-    private User getUserByName(String username) {
-        return userRepository.findByUsername(username);
+    private User getUserByName(String username) throws BaseException{
+        Optional<User> user = userRepository.findByUsername(username);
+        if(user.isPresent()) {
+            return user.get();
+        }
+        return null;
     }
 
     private User getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        Optional<User> user = userRepository.findByEmail(email);
+        if(user.isPresent()) {
+            return user.get();
+        }
+        return null;
     }
 
 
