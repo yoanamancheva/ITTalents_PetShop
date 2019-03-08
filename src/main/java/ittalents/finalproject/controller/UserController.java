@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -40,8 +41,12 @@ public class UserController extends BaseController{
 
     @PostMapping(value = "register")
     public User addUser(@RequestBody User user, HttpSession session) throws BaseException {
+        if(user.getId() == 0) {
+            throw new InvalidInputException("Invalid input format.");
+        }
+        validateLogin(session);
         validateUserInput(user);
-        if(user.isNotifications()) {
+        if (user.isNotifications()) {
             notificator.addObserver(user);
         }
         userRepository.save(user);
@@ -55,30 +60,36 @@ public class UserController extends BaseController{
         }).start();
         session.setAttribute(LOGGED_USER, user);
         return user;
+
     }
 
     //todo fix better exception
     @GetMapping(value = "register/confirmed")
-    public Message confirmedEmail(HttpSession session) {
-        User user =(User) session.getAttribute(LOGGED_USER);
-        user.setVerified(true);
-        userRepository.save(user);
-        new Thread(()-> {
-            try {
-                mailUtil.sendmail(user.getEmail(), MailUtil.SUCCESSFUL_REGISTRATION_SUBJECT,
-                                  MailUtil.SUCCESSFUL_REGISTRATION_CONTENT);
-            } catch (MessagingException e) {
-                e.printStackTrace();
-                log.error(e.getMessage());
-            }
-        }).start();
+    public Message confirmedEmail(HttpSession session){
+            User user = (User) session.getAttribute(LOGGED_USER);
+            user.setVerified(true);
+            userRepository.save(user);
+            new Thread(() -> {
+                try {
+                    mailUtil.sendmail(user.getEmail(), MailUtil.SUCCESSFUL_REGISTRATION_SUBJECT,
+                            MailUtil.SUCCESSFUL_REGISTRATION_CONTENT);
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                    log.error(e.getMessage());
+                }
+            }).start();
 
-        return new Message("You successfully confirmed your email address. Enjoy shopping!",
-                            LocalDateTime.now(), HttpStatus.OK.value());
+            return new Message("You successfully confirmed your email address. Enjoy shopping!",
+                    LocalDateTime.now(), HttpStatus.OK.value());
+
     }
 
     @PostMapping(value = "register/admin")
     public User addAdmin(@RequestBody User user , HttpSession session) throws BaseException{
+        if(user.getId() == 0) {
+            throw new InvalidInputException("Invalid input format.");
+        }
+        validateLogin(session);
         validateUserInput(user);
         user.setAdministrator(true);
         session.setAttribute(LOGGED_USER, user);
@@ -86,13 +97,14 @@ public class UserController extends BaseController{
         new Thread(() -> {
             try {
                 mailUtil.sendmail(user.getEmail(), MailUtil.VERIFY_EMAIL_SUBJECT_ADMIN,
-                                  MailUtil.VERIFY_EMAIL_CONTENT_ADMIN);
+                        MailUtil.VERIFY_EMAIL_CONTENT_ADMIN);
             } catch (MessagingException e) {
                 e.printStackTrace();
                 log.error(e.getMessage());
             }
         }).start();
         return user;
+
     }
 
     @GetMapping(value = "logout")
@@ -150,8 +162,8 @@ public class UserController extends BaseController{
     }
 
     //todo deal with exception better
-    @GetMapping(value = "/reset/password/{id}")
-    public Message forgottenPassword(@PathVariable long id, HttpSession session) throws BaseException {
+    @GetMapping(value = "/reset/password")
+    public Message forgottenPassword(@RequestParam("id") long id, HttpSession session) throws BaseException {
         if(session.getAttribute(LOGGED_USER) == null) {
             Optional<User> user = userRepository.findById(id);
             if (user.isPresent()) {
@@ -195,6 +207,7 @@ public class UserController extends BaseController{
                 userSession.setPassword("deleted");
                 userSession.setPassword2("deleted");
                 userSession.setEmail("deleted");
+                userSession.setNotifications(false);
                 userRepository.save(userSession);
                 return new Message("Profile deleted successfully.", LocalDateTime.now(), HttpStatus.OK.value());
             }
@@ -262,8 +275,6 @@ public class UserController extends BaseController{
         }
         return null;
     }
-
-
 
 
 

@@ -1,6 +1,7 @@
 package ittalents.finalproject.model.pojos.products;
 
 
+import ittalents.finalproject.model.pojos.User;
 import lombok.*;
 
 import javax.persistence.*;
@@ -27,18 +28,20 @@ public class FavouriteProduct implements Serializable {
     @Embeddable
     public static class FavouriteProductPK implements Serializable {
 
-        @Column (name = "user_id")
-        protected Long userId;
+        @ManyToOne
+        @JoinColumn (name = "user_id")
+        protected User user;
 
-        @Column (name = "product_id")
-        protected Long productId;
+        @ManyToOne
+        @JoinColumn (name = "product_id")
+        protected Product product;
 
-        public void setUserId(Long userId) {
-            this.userId = userId;
+        public void setUser(User user) {
+            this.user = user;
         }
 
-        public void setProductId(Long productId) {
-            this.productId = productId;
+        public void setProduct(Product product) {
+            this.product = product;
         }
 
         public FavouriteProductPK() {
@@ -49,13 +52,13 @@ public class FavouriteProduct implements Serializable {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             FavouriteProductPK that = (FavouriteProductPK) o;
-            return Objects.equals(userId, that.userId) &&
-                    Objects.equals(productId, that.productId);
+            return Objects.equals(user, that.user) &&
+                    Objects.equals(product, that.product);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(userId, productId);
+            return Objects.hash(user, product);
         }
     }
 
