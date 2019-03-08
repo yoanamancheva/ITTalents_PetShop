@@ -14,5 +14,5 @@ public class OrderedPet {
 
     private long petId;
     private long userId;
-
+    private int quantity;
 }

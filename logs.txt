@@ -3,3 +3,7 @@
 28-2019-03-07---ERROR-ittalents.finalproject.controller.ProductController:No product found with that id.
 36-2019-03-07---ERROR-ittalents.finalproject.controller.ProductController:No products found containing that name.
 50-2019-03-07---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+50-2019-03-07---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Wrong username/password
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.

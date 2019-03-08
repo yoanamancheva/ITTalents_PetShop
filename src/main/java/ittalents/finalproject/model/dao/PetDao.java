@@ -2,7 +2,7 @@ package ittalents.finalproject.model.dao;
 
 import ittalents.finalproject.model.pojos.dto.PetForSaleDto;
 import ittalents.finalproject.model.pojos.dto.PetWithPhotosDto;
-import ittalents.finalproject.model.pojos.pets.DiscountPet;
+import ittalents.finalproject.model.pojos.pets.PetInSale;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import ittalents.finalproject.model.pojos.pets.Photo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,7 +118,8 @@ public class PetDao {
             photos);
     }
 
-    public void addForSale(Pet pet, DiscountPet petForSale) throws Exception{
+    //TODO refactor
+    public void addForSale(Pet pet, PetInSale petForSale) throws Exception{
         Connection con = null;
         PreparedStatement ps = null;
         PreparedStatement ps2 = null;
