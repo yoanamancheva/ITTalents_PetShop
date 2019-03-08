@@ -1,5 +1,6 @@
 package ittalents.finalproject.controller;
 
+import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.util.exceptions.PetNotFoundException;
 import ittalents.finalproject.model.dao.PetDao;
@@ -24,7 +25,7 @@ public class PetsInSaleController extends BaseController {
 
     @PostMapping("{id}/forSale")
     public Message addForSale(@PathVariable("id") long id, @RequestBody PetInSale petInSale, HttpSession session)
-            throws Exception{
+            throws Exception {
         validateInputForSale(petInSale);
         validateLoginAdmin(session);
         Pet pet = dao.getById(id);
@@ -38,6 +39,17 @@ public class PetsInSaleController extends BaseController {
         List<PetForSaleDto> petsForSale = dao.listPetsForSale();
         if(petsForSale != null){
             return petsForSale;
+        }
+        else{
+            throw new PetNotFoundException();
+        }
+    }
+
+    @GetMapping(value = "/{id}/forSale")
+    public Pet getPetForSaleById(@PathVariable long id, HttpSession session) throws PetNotFoundException{
+        Pet pet = dao.getPetForSaleById(id);
+        if(pet != null){
+            return pet;
         }
         else{
             throw new PetNotFoundException();

@@ -5,16 +5,13 @@ import ittalents.finalproject.model.dao.PetDao;
 import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.dto.CartContentDto;
 import ittalents.finalproject.model.pojos.pets.Pet;
-
 import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.util.exceptions.ProductOutOfStockException;
-
 import ittalents.finalproject.model.pojos.products.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.Enumeration;

@@ -17,4 +17,8 @@ public class FinalOrderPets {
     private String address;
     private long userId;
     private double finalPrice;
+
+    public FinalOrderPets(String address){
+        this.address = address;
+    }
 }
