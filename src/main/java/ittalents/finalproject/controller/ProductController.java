@@ -17,11 +17,14 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static ittalents.finalproject.util.mail.MailUtil.NEW_PROMOTIONS_PRODUCTS_CONTENT;
 import static ittalents.finalproject.util.mail.MailUtil.NEW_PROMOTIONS_SUBJECT;
@@ -38,6 +41,85 @@ public class ProductController extends BaseController {
 
     @Autowired
     private Notificator notificator;
+
+    @Autowired
+    private ImageController imageController;
+
+    @PostMapping(value = "products/{id}/add/photo")
+    public Product addPhotoToProduct(@PathVariable("id") long id,
+                                     @RequestParam MultipartFile img,
+                                     HttpSession session) throws BaseException, IOException {
+        validateLoginAdmin(session);
+        Optional<Product> product = productRepository.findById(id);
+        if(!img.isEmpty() && id > 0 && product.isPresent()) {
+            String imgTitle = imageController.uploadImage(img, session);
+            product.get().setPhoto(imgTitle);
+            productRepository.save(product.get());
+            return product.get();
+        }
+        else {
+            throw new ProductNotFoundException("No product found with that id. Cannot set image.");
+        }
+    }
+
+    @GetMapping(value = "products/{id}/photo", produces = "image/png")
+    public @ResponseBody byte[] showProductImage(@PathVariable("id") long id) throws IOException, BaseException{
+        Optional<Product> product = productRepository.findById(id);
+        if(product.isPresent()) {
+            String image = product.get().getPhoto();
+            if(!image.equals("no photo")) {
+                return imageController.downloadImage(image);
+            }
+            else {
+                throw new ProductNotFoundException("No photo for this product.");
+            }
+        }
+        else {
+            throw new ProductNotFoundException("No product found with that id. Cannot show image.");
+        }
+    }
+
+
+
+    @GetMapping(value = "products/filter")
+    public List<Product> getAllProductsFiltered(@RequestParam(name = "sortBy", required = false) String sortBy,
+                                                @RequestParam(name = "minPrice", required = false) Double minPrice,
+                                                @RequestParam(name = "maxPrice", required = false) Double maxPrice,
+                                                @RequestParam(name = "category", required = false) String category,
+                                                @RequestParam(name = "name", required = false) String name) {
+        return productRepository.findAll()
+                .stream()
+                .filter(product -> minPrice == null ||
+                        product.getPrice() >= minPrice )
+                .filter(product -> maxPrice == null ||
+                        product.getPrice() <= maxPrice)
+                .filter(product -> category == null ||
+                        product.getCategory().equals(category))
+                .filter(product -> name == null ||
+                        product.getName().contains(name))
+                .sorted((c1, c2) -> {
+                    if(sortBy == null) return 1;
+                    switch (sortBy) {
+                        case "category" : return c1.getCategory().compareTo(c2.getCategory());
+                        case "description" : return c1.getDescription().compareTo(c2.getDescription());
+                        case "manufacturer" : return c1.getManifacturer().compareTo(c2.getManifacturer());
+                        case "name" : return c1.getName().compareTo(c2.getName());
+                        case "price" : return Double.compare(c1.getPrice(),c2.getPrice());
+                        default: return 1;
+                    }
+                })
+                .map(product -> new Product(product.getId(),
+                                            product.getName(),
+                                            product.getCategory(),
+                                            product.getPrice(),
+                                            product.getQuantity(),
+                                            product.getManifacturer(),
+                                            product.getDescription(),
+                                            product.getPhoto()))
+                .collect(Collectors.toList());
+    }
+
+
 
     @GetMapping(value = "/products/search/{name}")
     public List<Product> findProducts(@PathVariable("name") String name) throws BaseException{
@@ -81,7 +163,7 @@ public class ProductController extends BaseController {
         }
     }
 
-    @PostMapping(value = "/products/filter")
+    @PostMapping(value = "/products/byName")
     public Optional<Product> showProductByName(@RequestParam("name") String name) throws BaseException{
         Optional<Product> product = productRepository.findByName(name);
         if(product.isPresent()) {
@@ -93,14 +175,14 @@ public class ProductController extends BaseController {
     }
 
 
-    @PostMapping(value = "/products/filter/category")
-    public List<Product> filterByPrice(@RequestParam("category") String category) throws BaseException {
-        List<Product> products = productRepository.findAllByCategoryOrderByPrice(category);
-        if(products.isEmpty()) {
-            throw new ProductNotFoundException("No products found out of that category.");
-        }
-        return products;
-    }
+//    @PostMapping(value = "/products/filter/category")
+//    public List<Product> filterByPrice(@RequestParam("category") String category) throws BaseException {
+//        List<Product> products = productRepository.findAllByCategoryOrderByPrice(category);
+//        if(products.isEmpty()) {
+//            throw new ProductNotFoundException("No products found out of that category.");
+//        }
+//        return products;
+//    }
 
 
     @PostMapping(value = "/products/add")
@@ -163,7 +245,7 @@ public class ProductController extends BaseController {
     private void validateProductInput(Product product)throws BaseException {
         if(product.getName() == null || product.getCategory() == null || product.getPrice() < 0
                 || product.getQuantity() < 0 || product.getManifacturer() == null
-                || product.getDescription() == null || product.getPhoto() == null){
+                || product.getDescription() == null ){
             throw new InvalidInputException("Invalid input for the product input.");
         }
     }

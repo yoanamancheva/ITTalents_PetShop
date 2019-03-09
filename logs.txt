@@ -1,3 +1,8 @@
 28-2019-03-09---ERROR-ittalents.finalproject.controller.ProductController:This email is already user by another user.
 28-2019-03-09---ERROR-ittalents.finalproject.controller.ProductController:This username is already used by another user.
 57-2019-03-09---ERROR-ittalents.finalproject.controller.ProductController:There are not enough pieces of this product.
+36-2019-03-09---ERROR-ittalents.finalproject.controller.ProductController:Product not found with that name.
+50-2019-03-09---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+50-2019-03-09---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+28-2019-03-09---ERROR-ittalents.finalproject.controller.ProductController:Invalid input for the product input.
+28-2019-03-09---ERROR-ittalents.finalproject.controller.ProductController:Invalid input for the product input.

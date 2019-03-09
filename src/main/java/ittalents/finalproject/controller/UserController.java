@@ -141,9 +141,9 @@ public class UserController extends BaseController{
         if(pendingPassword == null || pendingUsername == null) {
             throw new InvalidInputException("Username/password should not be empty.");
         }
-        if(session.getAttribute(LOGGED_USER) != null) {
-            throw new InvalidInputException("You are already logged in.");
-        }
+//        if(session.getAttribute(LOGGED_USER) != null) {
+//            throw new InvalidInputException("You are already logged in.");
+//        }
         if(getUserByName(pendingUsername) != null ) {
             if (getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
                     getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {

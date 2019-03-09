@@ -2,6 +2,7 @@ package ittalents.finalproject.model.pojos.products;
 
 
 import ittalents.finalproject.model.pojos.Review;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
@@ -22,7 +24,6 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    @Column(name = "id", nullable=false)
     private long id;
     private String name;
     private String category;
@@ -30,15 +31,12 @@ public class Product {
     private int quantity;
     private String manifacturer;
     private String description;
-    private String photo;
+    private String photo = "no photo";
 
 
-//    @OneToMany
-//    @JoinColumn(name="id",referencedColumnName="productId")
-//    private Set<Review> reviews;
 
-
-    public Product(long id, String name, String category, double price, int quantity, String manufacturer, String description, String photo) {
+    public Product(long id, String name, String category, double price, int quantity, String manufacturer,
+                   String description) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -46,7 +44,7 @@ public class Product {
         this.quantity = quantity;
         this.manifacturer = manufacturer;
         this.description = description;
-        this.photo = photo;
+        this.photo = "no photo";
     }
 
 }

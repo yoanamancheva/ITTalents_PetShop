@@ -21,4 +21,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>  {
 
     @Query(value = "SELECT * FROM products ORDER BY price ASC", nativeQuery = true)
     List<Product> sortByPrice();
+
+    Optional<Product> findByPhoto(String photo);
 }
