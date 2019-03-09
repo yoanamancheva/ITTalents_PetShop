@@ -39,47 +39,19 @@ public class ProductController extends BaseController {
     @Autowired
     private ProductRepository productRepository;
 
-    @Autowired
-    private Notificator notificator;
-
-    @Autowired
-    private ImageController imageController;
 
     @PostMapping(value = "products/{id}/add/photo")
     public Product addPhotoToProduct(@PathVariable("id") long id,
                                      @RequestParam MultipartFile img,
                                      HttpSession session) throws BaseException, IOException {
         validateLoginAdmin(session);
-        Optional<Product> product = productRepository.findById(id);
-        if(!img.isEmpty() && id > 0 && product.isPresent()) {
-            String imgTitle = imageController.uploadImage(img, session);
-            product.get().setPhoto(imgTitle);
-            productRepository.save(product.get());
-            return product.get();
-        }
-        else {
-            throw new ProductNotFoundException("No product found with that id. Cannot set image.");
-        }
+       return productService.setProductPhoto(id, img, session);
     }
 
     @GetMapping(value = "products/{id}/photo", produces = "image/png")
     public @ResponseBody byte[] showProductImage(@PathVariable("id") long id) throws IOException, BaseException{
-        Optional<Product> product = productRepository.findById(id);
-        if(product.isPresent()) {
-            String image = product.get().getPhoto();
-            if(!image.equals("no photo")) {
-                return imageController.downloadImage(image);
-            }
-            else {
-                throw new ProductNotFoundException("No photo for this product.");
-            }
-        }
-        else {
-            throw new ProductNotFoundException("No product found with that id. Cannot show image.");
-        }
+        return productService.getProductImage(id);
     }
-
-
 
     @GetMapping(value = "products/filter")
     public List<Product> getAllProductsFiltered(@RequestParam(name = "sortBy", required = false) String sortBy,
@@ -87,94 +59,40 @@ public class ProductController extends BaseController {
                                                 @RequestParam(name = "maxPrice", required = false) Double maxPrice,
                                                 @RequestParam(name = "category", required = false) String category,
                                                 @RequestParam(name = "name", required = false) String name) {
-        return productRepository.findAll()
-                .stream()
-                .filter(product -> minPrice == null ||
-                        product.getPrice() >= minPrice )
-                .filter(product -> maxPrice == null ||
-                        product.getPrice() <= maxPrice)
-                .filter(product -> category == null ||
-                        product.getCategory().equals(category))
-                .filter(product -> name == null ||
-                        product.getName().contains(name))
-                .sorted((c1, c2) -> {
-                    if(sortBy == null) return 1;
-                    switch (sortBy) {
-                        case "category" : return c1.getCategory().compareTo(c2.getCategory());
-                        case "description" : return c1.getDescription().compareTo(c2.getDescription());
-                        case "manufacturer" : return c1.getManifacturer().compareTo(c2.getManifacturer());
-                        case "name" : return c1.getName().compareTo(c2.getName());
-                        case "price" : return Double.compare(c1.getPrice(),c2.getPrice());
-                        default: return 1;
-                    }
-                })
-                .map(product -> new Product(product.getId(),
-                                            product.getName(),
-                                            product.getCategory(),
-                                            product.getPrice(),
-                                            product.getQuantity(),
-                                            product.getManifacturer(),
-                                            product.getDescription(),
-                                            product.getPhoto()))
-                .collect(Collectors.toList());
-    }
 
+        return productService.filterProducts(sortBy, minPrice, maxPrice, category, name);
+    }
 
 
     @GetMapping(value = "/products/search/{name}")
     public List<Product> findProducts(@PathVariable("name") String name) throws BaseException{
-        List<Product> products = productRepository.search(name);
-        if(products.isEmpty()) {
-            throw new ProductNotFoundException("No products found containing that name.");
-        }
-        return products;
+        return productService.getProductsByNameContains(name);
     }
 
     @GetMapping(value = "/products/sort/price")
     public List<Product> sortByPrice() throws BaseException{
-        List<Product> products = productRepository.sortByPrice();
-        if(products.isEmpty()) {
-            throw new ProductNotFoundException("No products found.");
-        }
-        return products;
+        return productService.sortByPriceAsc();
     }
 
     @GetMapping(value = "/products")
     public List<Product> getAll(HttpSession session) throws BaseException {
         validateLogin(session);
-        List<Product> allProducts = productRepository.findAll();
-        if(allProducts.isEmpty()) {
-            throw new ProductNotFoundException("No products found.");
-        }
-        return allProducts;
+        return productService.getAllProducts();
     }
-
-
 
     @GetMapping(value = "/products/{id}")
     public Product getById(@PathVariable("id") long id, HttpSession session) throws BaseException{
         validateLogin(session);
-        Optional<Product> obj = productRepository.findById(id);
-        if(obj.isPresent()) {
-            return obj.get();
-        }
-        else {
-            throw new ProductNotFoundException("Product not found with that id.");
-        }
+        return productService.getProductById(id);
     }
 
+//    done
     @PostMapping(value = "/products/byName")
     public Optional<Product> showProductByName(@RequestParam("name") String name) throws BaseException{
-        Optional<Product> product = productRepository.findByName(name);
-        if(product.isPresent()) {
-            return product;
-        }
-        else {
-            throw new ProductNotFoundException("Product not found with that name.");
-        }
+        return productService.returnProductByName(name);
     }
 
-
+// not used
 //    @PostMapping(value = "/products/filter/category")
 //    public List<Product> filterByPrice(@RequestParam("category") String category) throws BaseException {
 //        List<Product> products = productRepository.findAllByCategoryOrderByPrice(category);
@@ -188,21 +106,13 @@ public class ProductController extends BaseController {
     @PostMapping(value = "/products/add")
     public Product add(@RequestBody Product product, HttpSession session) throws BaseException {
         validateLoginAdmin(session);
-        validateProductInput(product);
-        validateProductByName(product);
-        productRepository.save(product);
-        return product;
+        return productService.addProduct(product);
     }
 
     @PutMapping(value = "/products/update")
     public Product update(@RequestBody Product product, HttpSession session) throws BaseException{
         validateLoginAdmin(session);
-        validateProductInput(product);
-        if (!productRepository.findById(product.getId()).isPresent()) {
-            throw new InvalidInputException("There is not product with this id in the database.");
-        }
-        productRepository.save(product);
-        return product;
+        return productService.updateProduct(product);
     }
 
     //todo to update in sale table and review
@@ -221,47 +131,9 @@ public class ProductController extends BaseController {
         }
     }
 
-    @Autowired
-    private ProductInSaleRepository productInSaleRepository;
-
     @PostMapping(value = "/products/sale/add")
     public ProductInSale addProductToSale(@RequestBody ProductInSale productInSale, HttpSession session) throws BaseException{
         validateLoginAdmin(session);
-
-        if(productRepository.findById(productInSale.getProductId()).isPresent()) {
-            if(productInSale.getStartDate().compareTo(productInSale.getEndDate()) > 0) {
-                throw new InvalidInputException("The start date can not be after the end date.");
-            }
-            productInSaleRepository.save(productInSale);
-            notificator.sendNews(NEW_PROMOTIONS_SUBJECT, NEW_PROMOTIONS_PRODUCTS_CONTENT);
-            return productInSale;
-        }
-        else {
-            throw new InvalidInputException("There is no product with that id in the main table.");
-        }
-    }
-
-
-    private void validateProductInput(Product product)throws BaseException {
-        if(product.getName() == null || product.getCategory() == null || product.getPrice() < 0
-                || product.getQuantity() < 0 || product.getManifacturer() == null
-                || product.getDescription() == null ){
-            throw new InvalidInputException("Invalid input for the product input.");
-        }
-    }
-    private void validateProductByName(Product product) throws BaseException {
-        if (getProductByName(product.getName()) != null) {
-            throw new InvalidInputException("Product with that name already exists.");
-        }
-    }
-
-    private Product getProductByName(String name) {
-        Optional<Product> product = productRepository.findByName(name);
-        if (product.isPresent()) {
-            return product.get();
-        }
-        else {
-            return null;
-        }
+        return productService.addProductIntoSale(productInSale);
     }
 }

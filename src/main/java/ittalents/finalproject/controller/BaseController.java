@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
@@ -80,6 +81,14 @@ public abstract class BaseController {
         log.error(e.getMessage());
         return new Message(e.getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
+
+    @ExceptionHandler({IOException.class})
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public Message ioHandler(Exception e) {
+        log.error(e.getMessage());
+        return new Message(e.getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+    }
+
 
 //    @ExceptionHandler({Exception.class})
 //    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
