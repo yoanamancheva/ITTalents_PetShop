@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 public class OrderedPet {
 
+    private long orderId;
     private long petId;
-    private long userId;
-
+    private int quantity;
 }

@@ -1,11 +1,12 @@
 package ittalents.finalproject.controller;
 
+import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.util.exceptions.PetNotFoundException;
 import ittalents.finalproject.model.dao.PetDao;
 import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.dto.PetForSaleDto;
-import ittalents.finalproject.model.pojos.pets.DiscountPet;
+import ittalents.finalproject.model.pojos.pets.PetInSale;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,13 +24,13 @@ public class PetsInSaleController extends BaseController {
     PetDao dao;
 
     @PostMapping("{id}/forSale")
-    public Message addForSale(@PathVariable("id") long id, @RequestBody DiscountPet discountPet, HttpSession session)
-            throws Exception{
-        validateInputForSale(discountPet);
+    public Message addForSale(@PathVariable("id") long id, @RequestBody PetInSale petInSale, HttpSession session)
+            throws Exception {
+        validateInputForSale(petInSale);
         validateLoginAdmin(session);
         Pet pet = dao.getById(id);
-        discountPet.setPetId(id);
-        dao.addForSale(pet, discountPet);
+        petInSale.setPetId(id);
+        dao.addForSale(pet, petInSale);
         return new Message("Pet successfully added for sale", LocalDateTime.now(), HttpStatus.OK.value());
     }
 
@@ -44,8 +45,19 @@ public class PetsInSaleController extends BaseController {
         }
     }
 
+    @GetMapping(value = "/{id}/forSale")
+    public Pet getPetForSaleById(@PathVariable long id, HttpSession session) throws PetNotFoundException{
+        Pet pet = dao.getPetForSaleById(id);
+        if(pet != null){
+            return pet;
+        }
+        else{
+            throw new PetNotFoundException();
+        }
+    }
 
-    private void validateInputForSale(DiscountPet pet)throws InvalidInputException {
+
+    private void validateInputForSale(PetInSale pet)throws InvalidInputException {
         if(pet.getDiscountPrice() < 0 || pet.getStartDate() == null || pet.getEndDate() == null
                 || pet.getStartDate().compareTo(pet.getEndDate()) > 0
                 || pet.getStartDate().compareTo(pet.getEndDate()) == 0){

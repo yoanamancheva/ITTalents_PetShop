@@ -16,7 +16,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -41,10 +40,7 @@ public class UserController extends BaseController{
 
     @PostMapping(value = "register")
     public User addUser(@RequestBody User user, HttpSession session) throws BaseException {
-//        if(user.getId() == 0) {
-//            throw new InvalidInputException("Invalid input format.");
-//        }
-//        validateLogin(session);
+
         validateUserInput(user);
         if (user.isNotifications()) {
             notificator.addObserver(user);
@@ -86,10 +82,7 @@ public class UserController extends BaseController{
 
     @PostMapping(value = "register/admin")
     public User addAdmin(@RequestBody User user , HttpSession session) throws BaseException{
-//        if(user.getId() == 0) {
-//            throw new InvalidInputException("Invalid input format.");
-//        }
-//        validateLogin(session);
+
         validateUserInput(user);
         user.setAdministrator(true);
         session.setAttribute(LOGGED_USER, user);

@@ -1,4 +1,5 @@
 package ittalents.finalproject.controller;
+
 import ittalents.finalproject.util.exceptions.PetOutOfStockException;
 import ittalents.finalproject.model.dao.PetDao;
 import ittalents.finalproject.model.pojos.Message;
@@ -11,7 +12,6 @@ import ittalents.finalproject.model.pojos.products.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.Enumeration;
@@ -54,7 +54,6 @@ public class CartController extends BaseController {
     public Object addProductsToCart(@PathVariable("id") long id, @RequestParam("quantity") int quantity,
                                      HttpSession session) throws BaseException{
         System.out.println("-----------------------------------------");
-
         System.out.println(session.getAttribute(LOGGED_USER));
         validateLogin(session);
         Product product = productController.getById(id, session);
@@ -153,12 +152,14 @@ public class CartController extends BaseController {
         List<CartContentDto> content = new LinkedList<>();
         validateLogin(session);
         Enumeration<String> attributes = session.getAttributeNames();
-        attributes.nextElement();
+
 
         while ((attributes.hasMoreElements())) {
-            String key = attributes.nextElement();
-            System.out.println(key);
-            content.add(new CartContentDto(key, (int)session.getAttribute(key)));
+            String attribute = attributes.nextElement();
+            if(!attribute.contains(LOGGED_USER)) {
+                content.add(new CartContentDto(attribute, (int)session.getAttribute(attribute)));
+            }
+//            showCart(session);
         }
         if(!content.isEmpty()){
             return content;

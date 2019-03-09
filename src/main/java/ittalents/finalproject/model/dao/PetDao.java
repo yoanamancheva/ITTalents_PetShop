@@ -2,7 +2,9 @@ package ittalents.finalproject.model.dao;
 
 import ittalents.finalproject.model.pojos.dto.PetForSaleDto;
 import ittalents.finalproject.model.pojos.dto.PetWithPhotosDto;
-import ittalents.finalproject.model.pojos.pets.DiscountPet;
+import ittalents.finalproject.model.pojos.orders.FinalOrderPets;
+import ittalents.finalproject.model.pojos.pets.OrderedPet;
+import ittalents.finalproject.model.pojos.pets.PetInSale;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import ittalents.finalproject.model.pojos.pets.Photo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
+import javax.xml.transform.Result;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +24,7 @@ public class PetDao {
     @Autowired
     private JdbcTemplate db;
 
-    public void addPet(Pet pet){
+    public Pet addPet(Pet pet){
 
         String insertPet = "INSERT INTO pets(gender, breed, sub_breed, age, pet_desc, price, quantity) VALUES(?, ?, ?, ?, ?, ?, ?);";
         KeyHolder key = new GeneratedKeyHolder();
@@ -38,6 +41,7 @@ public class PetDao {
             }, key);
         pet.setPosted(Timestamp.valueOf(LocalDateTime.now()));
         pet.setId(key.getKey().longValue());
+        return pet;
     }
 
     public List<Pet> getAll(){
@@ -60,11 +64,10 @@ public class PetDao {
     }
 
     public Pet getById(long id){
-        String getById = "SELECT id, gender, breed, sub_breed, age, posted, pet_desc, in_sale, price, quantity FROM pets WHERE id = ?;";
-        Pet pet = db.query(getById, new Object[]{id}, (resultSet) -> {
-            resultSet.next();
-            return toPet(resultSet);
-        });
+        String getById = "SELECT id, gender, breed, sub_breed, age, posted, " +
+                "pet_desc, in_sale, price, quantity FROM pets WHERE id = ?;";
+        Pet pet = db.query(getById, new Object[]{id}, (resultSet) ->
+                {return returnPet(resultSet);});
         return pet;
     }
 
@@ -117,14 +120,15 @@ public class PetDao {
             photos);
     }
 
-    public void addForSale(Pet pet, DiscountPet petForSale) throws Exception{
+
+    public void addForSale(Pet pet, PetInSale petForSale)throws Exception{
         Connection con = null;
         PreparedStatement ps = null;
         try {
             con = db.getDataSource().getConnection();
             con.setAutoCommit(false);
             String addForSale = "INSERT INTO pets_in_sale(pet_id, start_date, end_date, discount_price) VALUES(?, ?, ?, ?);";
-            String updatePet = "UPDATE pets SET price = ? WHERE id = ?";
+            String updatePet = "UPDATE pets SET in_sale = 1 WHERE id = ?";
 
             ps = con.prepareStatement(addForSale, Statement.RETURN_GENERATED_KEYS);
             ps.setLong(1, petForSale.getPetId());
@@ -132,13 +136,10 @@ public class PetDao {
             ps.setTimestamp(3, petForSale.getEndDate());
             ps.setDouble(4, petForSale.getDiscountPrice());
             ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            rs.next();
-            petForSale.setId(rs.getLong(1));
+            petForSale.setId(ps.getGeneratedKeys().getLong("id"));
 
             ps = con.prepareStatement(updatePet);
-            ps.setDouble(1, petForSale.getDiscountPrice());
-            ps.setLong(2, pet.getId());
+            ps.setLong(1, pet.getId());
             ps.executeUpdate();
 
             con.commit();
@@ -150,6 +151,8 @@ public class PetDao {
         }
         finally {
             con.setAutoCommit(true);
+            con.close();
+            ps.close();
         }
     }
 
@@ -161,10 +164,26 @@ public class PetDao {
                 " JOIN pets_in_sale AS ps\n" +
                 " ON p.id = ps.pet_id\n" +
                 " JOIN pets_photos AS ph\n" +
-                " ON p.id = ph.pet_id\n";
+                " ON p.id = ph.pet_id\n" +
+                "WHERE ps.start_date <= CURRENT_DATE() AND\n" +
+                "ps.end_date > CURRENT_DATE();";
         List<Photo> photos = db.query(petsForSale, (rs, i) -> toPhoto(rs));
         List<PetForSaleDto> pets = db.query(petsForSale + " GROUP BY ps.id;", (rs, i) -> toPetForSale(rs, photos));
         return pets;
+    }
+
+    public Pet getPetForSaleById(long id){
+        String petForSale = "SELECT p.id, p.gender, p.breed, p.sub_breed, p.age, p.posted, p.pet_desc,\n" +
+                            " ps.discount_price AS price, p.quantity, p.in_sale" +
+                            "FROM pets_in_sale AS ps\n" +
+                            "JOIN pets AS p\n" +
+                            "ON ps.pet_id = p.id\n" +
+                            "WHERE p.id = ? AND" +
+                            "ps.start_date <= CURRENT_DATE() AND" +
+                            "ps.end_date >= CURRENT_DATE();";
+        Pet pet = db.query(petForSale, new Object[]{id}, (resultSet) ->
+            {return returnPet(resultSet);});
+        return pet;
     }
 
     private Photo toPhoto(ResultSet rs) throws SQLException{
@@ -187,5 +206,54 @@ public class PetDao {
                 rs.getTimestamp("end_date"),
                 rs.getDouble("ps.discount_price"),
                 photos);
+    }
+
+    public Pet getByBreeds(String breed, String subBreed) {
+        String getByName = "SELECT id, gender, breed, sub_breed, age, " +
+                           "posted, pet_desc, in_sale, price, quantity, posted " +
+                           "FROM pets\n" +
+                           "WHERE breed LIKE ? AND sub_breed LIKE ?;";
+        Pet pet = db.query(getByName, new Object[]{breed, subBreed},
+                (resultSet) -> {return returnPet(resultSet);});
+        return pet;
+    }
+
+    public Pet returnPet(ResultSet resultSet) throws SQLException{
+        boolean hasNext = resultSet.next();
+        if(!hasNext) {
+            return null;
+        }
+        else {
+            return toPet(resultSet);
+        }
+    }
+
+    public FinalOrderPets insertOrder(FinalOrderPets order) {
+        String insertOrder = "INSERT INTO all_orders_pets(address, user_id, final_price) VALUES (?, ?, ?);";
+        KeyHolder key = new GeneratedKeyHolder();
+        db.update((con)-> {
+            PreparedStatement ps = con.prepareStatement(insertOrder, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, order.getAddress());
+            ps.setLong(2, order.getUserId());
+            ps.setDouble(3, order.getFinalPrice());
+            return ps;
+        }, key);
+        order.setId(key.getKey().longValue());
+        order.setDate(Timestamp.valueOf(LocalDateTime.now()));
+
+        return order;
+    }
+
+    public OrderedPet insertOrderedPet(OrderedPet orderedPet) {
+        String insertOrderedPet = "INERT INTO pets_in_order(order_id, pet_id, quantity) VALUES (?, ?, ?)";
+        db.update((con)-> {
+            PreparedStatement ps = con.prepareStatement(insertOrderedPet);
+            ps.setLong(1, orderedPet.getOrderId());
+            ps.setLong(2, orderedPet.getPetId());
+            ps.setDouble(3, orderedPet.getQuantity());
+            return ps;
+        });
+
+        return orderedPet;
     }
 }
