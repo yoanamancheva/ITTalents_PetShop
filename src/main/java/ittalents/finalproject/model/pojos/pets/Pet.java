@@ -26,13 +26,12 @@ public class Pet {
     private double price;
     private int quantity;
 
-    public Pet(String gender, String breed, String subBreed, int age, Timestamp posted, String description, boolean inSale, double price, int quantity) {
+    public Pet(String gender, String breed, String subBreed, int age, Timestamp posted, String description, double price, int quantity) {
         this.gender = gender;
         this.breed = breed;
         this.age = age;
         this.subBreed = subBreed;
         this.petDesc = description;
-        this.inSale = inSale;
         this.price = price;
         this.quantity = quantity;
         this.posted = posted;

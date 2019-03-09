@@ -31,3 +31,29 @@
 28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:No user found with that id.
 50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
 50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Invalid input format.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Invalid input format.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Invalid input format.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Invalid input format.
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:The user is not logged.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You are already logged in.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You are already logged in.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You are already logged in.
+87-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:ittalents.finalproject.model.pojos.User cannot be cast to java.base/java.lang.Integer
+87-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Required request body is missing: public java.lang.Object ittalents.finalproject.controller.OrderController.makeOrder(ittalents.finalproject.model.pojos.orders.FinalOrderProducts,javax.servlet.http.HttpSession) throws ittalents.finalproject.util.exceptions.BaseException
+50-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You are not logged as admin.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You are already logged in.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Wrong username/password
+87-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:PreparedStatementCallback; Field 'in_sale' doesn't have a default value; nested exception is java.sql.SQLException: Field 'in_sale' doesn't have a default value
+80-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:PreparedStatementCallback; Field 'in_sale' doesn't have a default value; nested exception is java.sql.SQLException: Field 'in_sale' doesn't have a default value
+80-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:PreparedStatementCallback; Field 'in_sale' doesn't have a default value; nested exception is java.sql.SQLException: Field 'in_sale' doesn't have a default value
+80-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:PreparedStatementCallback; Field 'in_sale' doesn't have a default value; nested exception is java.sql.SQLException: Field 'in_sale' doesn't have a default value
+80-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:PreparedStatementCallback; Field 'in_sale' doesn't have a default value; nested exception is java.sql.SQLException: Field 'in_sale' doesn't have a default value
+80-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:PreparedStatementCallback; Field 'in_sale' doesn't have a default value; nested exception is java.sql.SQLException: Field 'in_sale' doesn't have a default value
+80-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:PreparedStatementCallback; Field 'in_sale' doesn't have a default value; nested exception is java.sql.SQLException: Field 'in_sale' doesn't have a default value
+36-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:Product not found with that id.
+57-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:There are not enough pieces of this product.
+57-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:There are not enough pieces of this product.
+28-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:You are already logged in.
+87-2019-03-08---ERROR-ittalents.finalproject.controller.ProductController:PreparedStatementCallback; Field 'in_sale' doesn't have a default value; nested exception is java.sql.SQLException: Field 'in_sale' doesn't have a default value

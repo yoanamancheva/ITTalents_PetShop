@@ -53,7 +53,6 @@ public class PetDao {
                 resultSet.getInt("age"),
                 resultSet.getTimestamp("posted"),
                 resultSet.getString("pet_desc"),
-                resultSet.getBoolean("in_sale"),
                 resultSet.getDouble("price"),
                 resultSet.getInt("quantity"));
         pet.setId(resultSet.getLong("id"));
@@ -121,7 +120,6 @@ public class PetDao {
     public void addForSale(Pet pet, DiscountPet petForSale) throws Exception{
         Connection con = null;
         PreparedStatement ps = null;
-        PreparedStatement ps2 = null;
         try {
             con = db.getDataSource().getConnection();
             con.setAutoCommit(false);
@@ -138,10 +136,10 @@ public class PetDao {
             rs.next();
             petForSale.setId(rs.getLong(1));
 
-            ps2 = con.prepareStatement(updatePet);
-            ps2.setDouble(1, petForSale.getDiscountPrice());
-            ps2.setLong(2, pet.getId());
-            ps2.executeUpdate();
+            ps = con.prepareStatement(updatePet);
+            ps.setDouble(1, petForSale.getDiscountPrice());
+            ps.setLong(2, pet.getId());
+            ps.executeUpdate();
 
             con.commit();
             System.out.println("Transaction made successfully");
