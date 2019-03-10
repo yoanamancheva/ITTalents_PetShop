@@ -1,25 +1,19 @@
 package ittalents.finalproject.controller;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
+import ittalents.finalproject.service.PetService;
 import ittalents.finalproject.util.exceptions.BaseException;
-import ittalents.finalproject.util.exceptions.ImageCannotBeAddedException;
-import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.util.exceptions.PetNotFoundException;
-import ittalents.finalproject.model.dao.PetDao;
 import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.dto.PetWithPhotosDto;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import ittalents.finalproject.model.pojos.pets.Photo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -27,19 +21,12 @@ import java.util.List;
 public class PetController extends BaseController {
 
     @Autowired
-    private PetDao dao;
-
-    @Autowired
-    private ImageController imgContr;
-
-    //TODO validation for existing id
+    private PetService service;
 
     @PostMapping(value = "/add")
     public Pet add(@RequestBody Pet pet, HttpSession session) throws BaseException {
-        validateInput(pet);
-        super.validateLoginAdmin(session);
-        System.out.println(pet.toString());
-        return dao.addPet(pet);
+        validateLoginAdmin(session);
+        return service.add(pet);
     }
 
     @GetMapping("/filter")
@@ -51,102 +38,59 @@ public class PetController extends BaseController {
                              @RequestParam(name = "gender", required = false) String gender,
                              @RequestParam(name = "fromAge", required = false) Integer fromAge,
                              @RequestParam(name = "toAge", required = false) Integer toAge,
-                             @RequestParam(name = "postedAfter", required = false) Timestamp postedAfter)
-            throws InvalidInputException {
-        if(sortBy == null && breed == null && subBreed == null && fromPrice == null &&
-            toPrice == null && gender == null && fromAge == null && toAge == null && postedAfter == null) {
-            return dao.getAll();
-        }
-        else {
-            return dao.filterAndSort(sortBy, breed, subBreed,
-                    fromPrice, toPrice, gender, fromAge, toAge, postedAfter);
-        }
+                             @RequestParam(name = "postedAfter", required = false) Timestamp postedAfter) {
+
+        return service.filterAndSort(sortBy, breed, subBreed, fromPrice, toPrice, gender, fromAge, toAge, postedAfter);
     }
 
     @GetMapping()
     public Object getAll() {
-        List<PetWithPhotosDto> pets = dao.getAll();
-        if(pets.isEmpty()){
-            return new Message("There are no pets for sale", LocalDateTime.now(), HttpStatus.NOT_FOUND.value());
-        }
-        else{
-            return pets;
-        }
+        return service.getAll();
     }
 
     @GetMapping(value = "/{id}")
     public Pet getById(@PathVariable Long id) throws PetNotFoundException{
-        Pet pet = null;
-        if(id > 0){
-            pet = dao.getById(id);
-        }
-        if(pet != null){
-            return pet;
-        }
-        else{
-            throw new PetNotFoundException();
-        }
+        return service.getById(id);
     }
 
     @DeleteMapping(value = "/{id}/remove")
     public Message removeById(@PathVariable Long id, HttpSession session) throws BaseException {
         validateLoginAdmin(session);
-        if(id > 0 && getById(id) != null) {
-            dao.delete(id);
-            return new Message("Successfully deleted pet!", LocalDateTime.now(), HttpStatus.OK.value());
-        }
-        else{
-            throw new PetNotFoundException();
-        }
+        validatePetId(id);
+        return service.removeById(id);
     }
 
 
     @PostMapping("/{id}/images")
-    public Message setPetImage(@PathVariable("id") Long id, @RequestParam MultipartFile img, HttpSession ses) throws BaseException, IOException {
+    public Photo setPetImage(@PathVariable("id") Long id, @RequestParam MultipartFile img, HttpSession ses) throws BaseException, IOException {
         validateLoginAdmin(ses);
-        if(!img.isEmpty() && id > 0 && getById(id) != null) {
-            String imgTitle = imgContr.uploadImage(img, ses);
-            Photo photo = new Photo(imgTitle, id);
-            dao.setImage(photo);
-            return new Message("The photo added successfully", LocalDateTime.now(), HttpStatus.OK.value());
-        }
-        else{
-            throw new ImageCannotBeAddedException();
-        }
+        validatePetId(id);
+        return service.setPetImage(id, img, ses);
     }
 
     @GetMapping("/{id}/images")
     public PetWithPhotosDto getPetImages(@PathVariable Long id)throws PetNotFoundException{
-        Pet p = this.getById(id);
-        List<Photo> photos = dao.getImagesById(id);
-        PetWithPhotosDto pet = new PetWithPhotosDto(p.getId(), p.getGender(),
-                    p.getBreed(), p.getSubBreed(), p.getAge(), p.getPosted(), p.getPetDesc(),
-                    p.getPrice(), p.getQuantity(), photos);
-        return pet;
+        validatePetId(id);
+        return service.getPetImages(id);
     }
 
     @GetMapping("/images")
     public List<PetWithPhotosDto> getPetsWithImage() throws PetNotFoundException{
-        List<PetWithPhotosDto> pets = dao.getPetsWithPhotos();
-        if(pets != null && !pets.isEmpty()){
-            return pets;
-        }
-        else{
-            throw new PetNotFoundException();
-        }
+        return service.getPetsWithImage();
+    }
+
+    @PutMapping(value = "/{id}")
+    public Pet updateQuantity(@PathVariable Long id, @RequestBody Pet pet, HttpSession session)
+            throws BaseException{
+        validateLoginAdmin(session);
+        validatePetId(id);
+        return service.updateQuantity(id, pet);
     }
 
 
-    private void validateInput(Pet pet) throws BaseException{
-        if(pet.getGender() == null || pet.getGender().equals("") || pet.getAge() < 0 || pet.getAge() > 20
-                || pet.getBreed() == null || pet.getBreed().equals("") ||  pet.getSubBreed().equals("")
-                || pet.getSubBreed() == null || pet.getQuantity() > 20
-                || pet.getQuantity() < 1 || pet.getPrice() < 0 || (!pet.getGender().equals("M")
-                && !pet.getGender().equals("F"))){
-            throw new InvalidInputException("Invalid input.");
-        }
-        if(dao.getByBreeds(pet.getBreed(), pet.getSubBreed()) != null){
-            throw new InvalidInputException("This breed and sub breed already exist.");
+    public void validatePetId(Long id) throws PetNotFoundException{
+        if(id == null || getById(id) == null){
+            throw new PetNotFoundException();
         }
     }
 

@@ -194,7 +194,7 @@ public class UserService {
 //    change user's password, only if it is logged in
     public Message updatePassword(ChangePasswordUserDTO pendingUser, User user) throws BaseException{
         if(userRepository.findById(user.getId()).isPresent()) {
-                         
+
             if(BCrypt.checkpw(pendingUser.getPassword(), user.getPassword())
                     && user.getUsername().equals(pendingUser.getUsername())) {
                 if(!BCrypt.checkpw(pendingUser.getNewPassword(), user.getPassword())) {
