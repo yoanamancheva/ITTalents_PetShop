@@ -1,6 +1,9 @@
 package ittalents.finalproject.controller;
 
 
+import ittalents.finalproject.model.pojos.Message;
+import ittalents.finalproject.model.pojos.dto.ListReview;
+import ittalents.finalproject.service.ReviewService;
 import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.model.pojos.Review;
@@ -16,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.websocket.server.PathParam;
 import java.util.Optional;
 
 @RestController
@@ -28,30 +32,27 @@ public class ReviewController extends BaseController {
     private ProductService productService;
 
     @Autowired
-    private ProductRepository productRepository;
+    private ReviewService reviewService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-
+//    get product info + reviews for it
     @GetMapping("/product/{id}/reviews")
     public ListProduct getAllInfoForProduct(@PathVariable long id, HttpSession session) throws BaseException {
-        return this.productService.getAllInfoForProduct(id, session);
+        return this.reviewService.getAllInfoForProduct(id, session);
     }
 
+//    add review to a product
     @PostMapping("/product/reviews")
-    public Review addReview(@RequestBody AddReviewDTO addReviewDTO) throws BaseException{
+    public ListReview addReview(@RequestBody AddReviewDTO addReviewDTO, HttpSession session) throws BaseException{
+        validateLogin(session);
+        return reviewService.addReviewToProduct(addReviewDTO);
+    }
 
-        Optional<Product> product = productRepository.findById(addReviewDTO.getProductId());
-        Optional<User> user = userRepository.findById(addReviewDTO.getUserId());
-
-        if(product.isPresent() && user.isPresent()) {
-            Review review = new Review(product.get(), user.get(), addReviewDTO.getReview(), addReviewDTO.getRating());
-            return reviewRepository.save(review);
-        }
-        else {
-            throw new InvalidInputException("Invalid request. No product/user with that id found.");
-        }
+//    delete review
+    @DeleteMapping("/products/reviews/{id}")
+    public Message removeProductReview(HttpSession session, @PathVariable("id") long id) throws BaseException {
+        validateLogin(session);
+        User user = (User)session.getAttribute(LOGGED_USER);
+        return reviewService.removeReviewFromProduct(user, id);
     }
 
 }

@@ -9,6 +9,7 @@ import ittalents.finalproject.model.pojos.products.Product;
 import ittalents.finalproject.model.repos.FavouriteProductRepository;
 import ittalents.finalproject.model.repos.ProductRepository;
 import ittalents.finalproject.model.repos.UserRepository;
+import ittalents.finalproject.service.FavouriteProductService;
 import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,75 +31,29 @@ import static java.lang.Math.toIntExact;
 public class FavouriteProductController extends BaseController{
 
     @Autowired
-    private ProductRepository productRepository;
+    private FavouriteProductService favouriteProductService;
 
-    @Autowired
-    private FavouriteProductRepository favouriteProductRepository;
-
+//    add product to user's favourites
     @PostMapping(value = "products/favourites/add")
     public Object addProductToFavourite(@RequestParam("id") long id, HttpSession session) throws BaseException {
         validateLogin(session);
         User user = (User)session.getAttribute(LOGGED_USER);
-        Optional<Product> product = productRepository.findById(id);
-        if(product.isPresent()) {
-            FavouriteProduct favouriteProduct = new FavouriteProduct();
-            FavouriteProduct.FavouriteProductPK  pk = new FavouriteProduct.FavouriteProductPK();
-
-            pk.setUser(user);
-            pk.setProduct(product.get());
-
-            favouriteProduct.setFavouriteProductPK(pk);
-            favouriteProductRepository.save(favouriteProduct);
-            return new Message("Product with id " + id + " was successfully added to user's favourites.",
-                    LocalDateTime.now(), HttpStatus.OK.value());
-        }
-        else {
-            throw new ProductNotFoundException("No product with that id found. You cannot add it to favourites.");
-        }
+        return favouriteProductService.addProductToFavourites(id, user);
     }
 
+//  remove product from user's favourites
     @PostMapping(value = "products/favourites/remove")
     public Message removeProductFromFavourite(@RequestParam("id") long id, HttpSession session) throws BaseException{
         validateLogin(session);
         User user = (User)session.getAttribute(LOGGED_USER);
-
-        if(productRepository.findById(id).isPresent()) {
-            Optional<FavouriteProduct> product = favouriteProductRepository.findByFavouriteProductPK(user.getId(), id);
-            if(product.isPresent()) {
-                favouriteProductRepository.delete(product.get());
-                return new Message("Product with id " + id + " was successfully removed from favourites.",
-                                    LocalDateTime.now(), HttpStatus.OK.value());
-            } else {
-                throw  new ProductNotFoundException("No product with that id found in user's favourites.");
-            }
-        }
-        else {
-            throw new ProductNotFoundException("No product found with that id this user's favourites.");
-        }
+        return favouriteProductService.removeProductFromFavourites(id, user);
     }
 
+//  get user's favourite products
     @GetMapping(value = "products/favourites")
     public ShowFavouriteProductsDTO showUserFavourites(HttpSession session) throws BaseException{
         validateLogin(session);
         User user = (User)session.getAttribute(LOGGED_USER);
-        ShowFavouriteProductsDTO userFavourites = new ShowFavouriteProductsDTO(user.getId());
-
-        userFavourites.setUsername(user.getUsername());
-
-        List<FavouriteProduct> favouriteProducts = favouriteProductRepository.getAllByFavouriteProductPK_User(user);
-        List<Product> products = new ArrayList<>();
-
-
-        for (FavouriteProduct favouriteProduct : favouriteProducts) {
-
-            Optional<Product> product = productRepository.findById(favouriteProduct.getFavouriteProductPK().getProduct().getId());
-
-            if(product.isPresent()) {
-                products.add(product.get());
-            }
-        }
-
-        userFavourites.addFavourites(products);
-        return userFavourites;
+        return favouriteProductService.getUsersFavouriteProducts(user);
     }
 }

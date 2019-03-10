@@ -22,7 +22,7 @@ public class MailUtil {
 
     public static final String VERIFY_EMAIL_CONTENT_ADMIN = "You registered as admin. " +
                                                             " Please, follow the link and verify your email address." +
-                                                            "\n <a href=\"http://localhost:8080/users/register/confirmed/"+
+                                                            "\n <a href=\"http://localhost:8080/users/register/confirmed\">"+
                                                             "click here </a>";
     public static final String VERIFY_EMAIL_SUBJECT_ADMIN = "Verifying email - admin.";
 
@@ -43,7 +43,7 @@ public class MailUtil {
     public static final String SUCCESSFUL_REGISTRATION_SUBJECT = "Confirmed email address.";
 
     public static final String SUCCESSFUL_NEW_PASSWORD_CONTENT = "You successfully changed your password." +
-            " Enjoy shopping.";
+            "\" Enjoy shopping.";
     public static final String SUCCESSFUL_NEW_PASSWORD_SUBJECT = "New password.";
 
 

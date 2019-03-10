@@ -35,10 +35,11 @@ public class ProductController extends BaseController {
     @Autowired
     private ProductService productService;
 
-
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ProductInSaleRepository productInSaleRepository;
 
     @PostMapping(value = "products/{id}/add/photo")
     public Product addPhotoToProduct(@PathVariable("id") long id,
@@ -86,7 +87,6 @@ public class ProductController extends BaseController {
         return productService.getProductById(id);
     }
 
-//    done
     @PostMapping(value = "/products/byName")
     public Optional<Product> showProductByName(@RequestParam("name") String name) throws BaseException{
         return productService.returnProductByName(name);
@@ -131,9 +131,29 @@ public class ProductController extends BaseController {
         }
     }
 
+//    Products in sale -------------------------------------------------------------------------------------------------
     @PostMapping(value = "/products/sale/add")
-    public ProductInSale addProductToSale(@RequestBody ProductInSale productInSale, HttpSession session) throws BaseException{
+    public ProductInSale addProductToSale(@RequestBody ProductInSale productInSale, HttpSession session)
+                                          throws BaseException{
         validateLoginAdmin(session);
         return productService.addProductIntoSale(productInSale);
     }
+
+//  get product in sale by id
+    public ProductInSale getProductInSaleByProductId(long id, HttpSession session) throws BaseException {
+        validateLogin(session);
+        List<ProductInSale> list = productInSaleRepository.findByProductId(id);
+
+        if(list.size() > 0) {
+            for (ProductInSale productInSale : list) {
+                if(productInSale.getStartDate().compareTo(LocalDateTime.now()) < 0
+                        && LocalDateTime.now().compareTo(productInSale.getEndDate()) < 0) {
+                    return productInSale;
+                }
+            }
+        }
+        return null;
+    }
+
+
 }

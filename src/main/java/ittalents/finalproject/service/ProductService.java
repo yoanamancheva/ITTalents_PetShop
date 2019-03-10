@@ -1,24 +1,19 @@
 package ittalents.finalproject.service;
 
 import ittalents.finalproject.controller.ImageController;
-import ittalents.finalproject.controller.ProductInSaleController;
 import ittalents.finalproject.model.pojos.products.ProductInSale;
 import ittalents.finalproject.model.repos.ProductInSaleRepository;
+import ittalents.finalproject.model.repos.UserRepository;
 import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.InvalidInputException;
 
-import ittalents.finalproject.model.pojos.dto.ListProduct;
-import ittalents.finalproject.model.pojos.dto.ListReview;
 import ittalents.finalproject.model.pojos.products.Product;
 import ittalents.finalproject.model.repos.ProductRepository;
 import ittalents.finalproject.model.repos.ReviewRepository;
 import ittalents.finalproject.util.exceptions.ProductNotFoundException;
 import ittalents.finalproject.util.mail.Notificator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
@@ -40,9 +35,6 @@ public class ProductService {
     private ReviewRepository reviewRepository;
 
     @Autowired
-    private ProductInSaleController productInSaleController;
-
-    @Autowired
     private ImageController imageController;
 
     @Autowired
@@ -51,37 +43,9 @@ public class ProductService {
     @Autowired
     private Notificator notificator;
 
-    private List<ListReview> getReviewsForProduct(long id) {
+    @Autowired
+    private UserRepository userRepository;
 
-        return this.reviewRepository.findAll().stream()
-                .filter(review ->  review.getProduct().getId() == id)
-                .map(review ->  new ListReview(review.getId(), review.getReview(), review.getRating(), review.getUser().getUsername()))
-                .collect(Collectors.toList());
-    }
-
-    //returns dto product with it's reviews
-    public ListProduct getAllInfoForProduct(long id, HttpSession session) throws BaseException {
-        ProductInSale productInSale = productInSaleController.getProductInSaleByProductId(id, session);
-        Optional<Product> product = productRepository.findById(id);
-
-            if(product.isPresent()) {
-                if( productInSale != null) {
-                    product.get().setPrice(productInSale.getDiscountPrice());
-                }
-                List<ListReview> reviews = getReviewsForProduct(id);
-                ListProduct productReviews = new ListProduct(product.get().getId(), product.get().getName(),
-                                                             product.get().getDescription(), product.get().getPrice());
-                productReviews.addReviews(reviews);
-
-                return productReviews;
-
-        }
-        else {
-            throw new InvalidInputException("No product found with that id.");
-        }
-    }
-
-//    ------------------------------------------------------------------------------------------------------------------
 
 //    sets photo to product
     public Product setProductPhoto(long id,  MultipartFile img, HttpSession session) throws BaseException, IOException {
@@ -218,6 +182,8 @@ public class ProductService {
         return product;
     }
 
+// Products in sale ----------------------------------------------------------------------------------------------------
+
 //    add existing product to sale
     public ProductInSale addProductIntoSale(ProductInSale productInSale) throws BaseException {
         if(productRepository.findById(productInSale.getProductId()).isPresent()) {
@@ -232,6 +198,7 @@ public class ProductService {
             throw new InvalidInputException("There is no product with that id in the main table.");
         }
     }
+
 
 
 // validations-----------------------------------------------------------------------------------------

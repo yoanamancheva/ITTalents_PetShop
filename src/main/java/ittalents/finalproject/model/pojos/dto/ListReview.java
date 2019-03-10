@@ -1,10 +1,8 @@
 package ittalents.finalproject.model.pojos.dto;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 
 import javax.persistence.Id;
 
@@ -12,7 +10,6 @@ import javax.persistence.Id;
 @Setter
 @ToString
 @AllArgsConstructor
-
 public class ListReview {
 
     @Id
@@ -20,5 +17,11 @@ public class ListReview {
     private String review;
     private int rating;
     private String user;
+
+    public ListReview(String review, int rating , String username) {
+        this.review = review;
+        this.rating = rating;
+        this.user = username;
+    }
 
 }

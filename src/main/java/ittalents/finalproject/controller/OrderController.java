@@ -112,7 +112,7 @@ public class OrderController  extends BaseController{
 
     private double checkIfProductIsInSale(Product product, HttpSession session) throws BaseException{
         long id = product.getId();
-        ProductInSale productInSale = productInSaleController.getProductInSaleByProductId(id, session);
+        ProductInSale productInSale = productController.getProductInSaleByProductId(id, session);
         if(productInSale != null) {
             return productInSale.getDiscountPrice();
         }
