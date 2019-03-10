@@ -152,12 +152,14 @@ public class CartController extends BaseController {
         List<CartContentDto> content = new LinkedList<>();
         validateLogin(session);
         Enumeration<String> attributes = session.getAttributeNames();
-        attributes.nextElement();
+
 
         while ((attributes.hasMoreElements())) {
-            String key = attributes.nextElement();
-            System.out.println(key);
-            content.add(new CartContentDto(key, (int)session.getAttribute(key)));
+            String attribute = attributes.nextElement();
+            if(!attribute.contains(LOGGED_USER)) {
+                content.add(new CartContentDto(attribute, (int)session.getAttribute(attribute)));
+            }
+//            showCart(session);
         }
         if(!content.isEmpty()){
             return content;

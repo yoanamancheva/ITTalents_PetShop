@@ -14,6 +14,7 @@ import java.util.Set;
 public interface ProductRepository extends JpaRepository<Product, Long>  {
 
     Optional<Product> findByName(String name);
+
     List<Product> findAllByCategoryOrderByPrice(String category);
 
     @Query(value = "SELECT * FROM products p WHERE p.name LIKE %:name%", nativeQuery = true)
@@ -21,4 +22,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>  {
 
     @Query(value = "SELECT * FROM products ORDER BY price ASC", nativeQuery = true)
     List<Product> sortByPrice();
+
+    Optional<Product> findByPhoto(String photo);
 }

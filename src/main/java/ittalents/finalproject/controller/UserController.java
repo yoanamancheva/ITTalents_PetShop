@@ -16,7 +16,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -41,10 +40,7 @@ public class UserController extends BaseController{
 
     @PostMapping(value = "register")
     public User addUser(@RequestBody User user, HttpSession session) throws BaseException {
-        if(user.getId() == 0) {
-            throw new InvalidInputException("Invalid input format.");
-        }
-        validateLogin(session);
+
         validateUserInput(user);
         if (user.isNotifications()) {
             notificator.addObserver(user);
@@ -86,10 +82,7 @@ public class UserController extends BaseController{
 
     @PostMapping(value = "register/admin")
     public User addAdmin(@RequestBody User user , HttpSession session) throws BaseException{
-        if(user.getId() == 0) {
-            throw new InvalidInputException("Invalid input format.");
-        }
-        validateLogin(session);
+
         validateUserInput(user);
         user.setAdministrator(true);
         session.setAttribute(LOGGED_USER, user);
@@ -148,9 +141,9 @@ public class UserController extends BaseController{
         if(pendingPassword == null || pendingUsername == null) {
             throw new InvalidInputException("Username/password should not be empty.");
         }
-        if(session.getAttribute(LOGGED_USER) != null) {
-            throw new InvalidInputException("You are already logged in.");
-        }
+//        if(session.getAttribute(LOGGED_USER) != null) {
+//            throw new InvalidInputException("You are already logged in.");
+//        }
         if(getUserByName(pendingUsername) != null ) {
             if (getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
                     getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
