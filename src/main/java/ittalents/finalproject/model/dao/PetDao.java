@@ -12,12 +12,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.xml.transform.Result;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class PetDao {
@@ -47,9 +47,13 @@ public class PetDao {
         return pet;
     }
 
-    public List<Pet> getAll(){
-        String getAll = "SELECT id, gender, breed, sub_breed, age, posted, pet_desc, price, quantity, posted FROM pets ORDER BY posted DESC;";
-        List<Pet> pets = db.query(getAll, (resultSet, i) -> toPet(resultSet));
+    public List<PetWithPhotosDto> getAll(){
+        String getAll = "SELECT p.id, p.gender, p.breed, p.sub_breed, p.age, p.posted, p.pet_desc, p.price, " +
+                    "p.quantity, p.posted FROM pets AS p LEFT JOIN pets_photos AS ph ON p.id = ph.pet_id " +
+                    "WHERE ph.id IS NULL ";
+        List<PetWithPhotosDto> pets = db.query(getAll, (resultSet, i) ->
+                toPetWithPhotos(resultSet, new LinkedList<Photo>()));
+        pets.addAll(getPetsWithPhotos());
         return pets;
     }
 
@@ -66,7 +70,7 @@ public class PetDao {
         return pet;
     }
 
-    public Pet getById(long id){
+    public Pet getById(Long id){
         String getById = "SELECT id, gender, breed, sub_breed, age, posted, " +
                 "pet_desc, price, quantity FROM pets WHERE id = ?;";
         Pet pet = db.query(getById, new Object[]{id}, (resultSet) ->
@@ -74,7 +78,7 @@ public class PetDao {
         return pet;
     }
 
-    public void delete(long id) {
+    public void delete(Long id) {
         String deletePet = "DELETE FROM pets WHERE id = ?";
         db.update(deletePet, new Object[] {id});
     }
@@ -91,7 +95,7 @@ public class PetDao {
         photo.setId(key.getKey().longValue());
     }
 
-    public List<Photo> getImagesById(long id) {
+    public List<Photo> getImagesById(Long id) {
         String getPhotos = "SELECT  ph.id, ph.photo_path, ph.pet_id FROM pets AS p JOIN pets_photos AS ph ON ? = pet_id;";
         return db.query(getPhotos, (rs, i) -> {return new Photo(rs.getLong("ph.id"),
                                          rs.getString("ph.photo_path"),
@@ -104,7 +108,8 @@ public class PetDao {
                 "ph.photo_path, p.price FROM pets AS p JOIN pets_photos AS ph ON p.id = ph.pet_id";
         List<Photo> photos = db.query(getPets, (rs, i) -> toPhoto(rs));
 
-        List<PetWithPhotosDto> pets = db.query(getPets + "  GROUP BY p.id;", (rs, i) -> toPetWithPhotos(rs, photos));
+        List<PetWithPhotosDto> pets = db.query(getPets + "  GROUP BY p.id;",
+                (rs, i) -> toPetWithPhotos(rs, photos));
         return pets;
     }
 
@@ -156,7 +161,7 @@ public class PetDao {
         return pets;
     }
 
-    public Pet getPetForSaleById(long id){
+    public Pet getPetForSaleById(Long id){
         String petForSale = "SELECT p.id, p.gender, p.breed, p.sub_breed, p.age, p.posted, p.pet_desc,\n" +
                             " ps.discount_price, p.quantity " +
                             "FROM pets_in_sale AS ps\n" +
@@ -269,5 +274,45 @@ public class PetDao {
         });
 
         return orderedPet;
+    }
+
+    public List<PetWithPhotosDto> filterAndSort(String sortBy, String breed, String subBreed,
+                                   Double fromPrice, Double toPrice, String gender, Integer fromAge,
+                                   Integer toAge, Timestamp postedAfter) {
+        return getAll()
+            .stream()
+            .filter(pet -> breed == null || pet.getBreed().contains(breed))
+            .filter(pet -> subBreed == null || pet.getSubBreed().contains(subBreed))
+            .filter(pet -> fromPrice == null || pet.getPrice() >= fromPrice)
+            .filter(pet -> toPrice == null || pet.getPrice() < toPrice)
+            .filter(pet -> gender == null || pet.getGender().equalsIgnoreCase(gender))
+            .filter(pet -> fromAge == null || pet.getAge() >= fromAge)
+            .filter(pet -> toAge == null || pet.getAge() < toAge)
+            .filter(pet -> postedAfter == null || pet.getPosted().compareTo(postedAfter) >= 0)
+            .sorted((pet1, pet2) -> {
+                if (sortBy == null) {
+                    return 1;
+                }
+                switch (sortBy) {
+                    case "breed":
+                        return pet1.getBreed().compareTo(pet2.getBreed());
+                    case "subBreed":
+                        return pet1.getSubBreed().compareTo(pet2.getSubBreed());
+                    case "price":
+                        return Double.compare(pet1.getPrice(), pet2.getPrice());
+                    case "gender":
+                        return pet1.getGender().compareTo(pet2.getGender());
+                    case "age":
+                        return Integer.compare(pet1.getAge(), pet2.getAge());
+                    case "posted":
+                        return pet1.getPosted().compareTo(pet2.getPosted());
+                    default:
+                        return 1;
+                }
+            })
+            .map(pet -> new PetWithPhotosDto(pet.getId(), pet.getGender(), pet.getBreed(),
+                    pet.getSubBreed(), pet.getAge(), pet.getPosted(), pet.getPetDesc(),
+                    pet.getPrice(), pet.getQuantity(), pet.getPhotos()))
+            .collect(Collectors.toList());
     }
 }
