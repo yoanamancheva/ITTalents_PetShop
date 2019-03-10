@@ -24,8 +24,8 @@ public class OrderController  extends BaseController{
     @Autowired
     private FinalOrderProductRepository finalOrderProductRepository;
 
-    @Autowired
-    private ProductInSaleController productInSaleController;
+//    @Autowired
+//    private ProductInSaleController productInSaleController;
 
     @Autowired
     private OrderedProductRepository orderedProductRepository;
