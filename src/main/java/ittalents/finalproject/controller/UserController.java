@@ -11,6 +11,7 @@ import ittalents.finalproject.util.exceptions.UserNotFoundException;
 import ittalents.finalproject.util.mail.MailUtil;
 import ittalents.finalproject.util.mail.Notificator;
 import org.apache.log4j.Logger;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -79,7 +80,12 @@ public class UserController extends BaseController{
 
 
 
-
+    @GetMapping(value = "/crypt")
+    public String getCrypt() {
+        String password = "1234";
+        String cryptedPass = BCrypt.hashpw(password, BCrypt.gensalt());
+        return cryptedPass;
+    }
 
 
     //working
@@ -127,8 +133,8 @@ public class UserController extends BaseController{
 //    }
 
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+//    @Autowired
+//    private JdbcTemplate jdbcTemplate;
 
     //working, not used
 //    @GetMapping(value = "/users")

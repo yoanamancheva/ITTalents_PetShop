@@ -1,5 +1,6 @@
 package ittalents.finalproject.controller;
 
+import ittalents.finalproject.service.OrderService;
 import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.pojos.orders.FinalOrderProducts;
@@ -25,112 +26,25 @@ public class OrderController  extends BaseController{
     private FinalOrderProductRepository finalOrderProductRepository;
 
     @Autowired
-    private ProductInSaleController productInSaleController;
-
-    @Autowired
     private OrderedProductRepository orderedProductRepository;
 
     @Autowired
-    private ProductController productController;
+    private OrderService orderService;
 
 
-
-
-    //working
     @PostMapping(value = "finalOrder/product")
     public Object addFinalOrderProduct (@RequestBody FinalOrderProducts finalOrderProduct) {
         return finalOrderProductRepository.save(finalOrderProduct);
     }
 
-
     @PostMapping(value = "cart/order")
     public Object makeOrder(@RequestBody FinalOrderProducts finalOrder,HttpSession session) throws BaseException {
-        List<OrderedProduct> list = new ArrayList<>();
-
-        OrderedProduct orderedProduct1 = new OrderedProduct();
-        OrderedProduct.OrderedProductPk pk = new OrderedProduct.OrderedProductPk();
-
-        double money = 0;
-
-        User user = (User)session.getAttribute(LOGGED_USER);
-        long userId = user.getId();
-
-        finalOrder.setUserId(userId);
-
-
-        Enumeration<String> attributes = session.getAttributeNames();
-        while ((attributes.hasMoreElements())) {
-
-            String attribute = attributes.nextElement();
-
-            if(attribute.contains("_product")) {
-                String[] fullName = attribute.split("_");
-                String id = fullName[0];
-                long convertedId = Long.valueOf(id);
-
-                orderedProduct1.setMidProductId(convertedId);
-                orderedProduct1.setQuantity((int)session.getAttribute(attribute));
-
-                list.add(orderedProduct1);
-                orderedProduct1 = new OrderedProduct();
-
-
-                Product product = productController.getById(convertedId, session);
-                if(checkIfProductIsInSale(product, session) != -1) {
-                    money += checkIfProductIsInSale(product, session) * (int)session.getAttribute(attribute);
-//                    System.out.println("mid money = " + money);
-                }
-                else {
-                    money += product.getPrice() * (int)session.getAttribute(attribute);
-//                    System.out.println("mid money = " + money);
-                }
-
-            }
-        }
-//        System.out.println("All money: " + money);
-
-        finalOrder.setFinalPrice(money);
-
-//        to save in all_orders_products table
-        long orderId =  finalOrderProductRepository.save(finalOrder).getId();
-
-        for (OrderedProduct orderedProduct : list) {
-            orderedProduct.setMidOrderId(orderId);
-
-            pk.setOrderId(orderId);
-
-            pk.setProductId(orderedProduct.getMidProductId());
-
-            orderedProduct.setOrderedProductPk(pk);
-            orderedProductRepository.save(orderedProduct);
-        }
-        removeAttributesFromSession(session, "_product");
-
-        return finalOrder;
+        validateLogin(session);
+        return orderService.makeOrderProducts(finalOrder, session);
     }
 
 
-    private double checkIfProductIsInSale(Product product, HttpSession session) throws BaseException{
-        long id = product.getId();
-        ProductInSale productInSale = productController.getProductInSaleByProductId(id, session);
-        if(productInSale != null) {
-            return productInSale.getDiscountPrice();
-        }
-        else return -1;
-    }
-
-    private void removeAttributesFromSession(HttpSession session, String name) {
-        Enumeration<String> attributes = session.getAttributeNames();
-        while ((attributes.hasMoreElements())) {
-            String attribute = attributes.nextElement();
-            if(attribute.contains(name)) {
-                session.removeAttribute(attribute);
-            }
-        }
-    }
-
-
-    //working
+//    testing
     @PostMapping(value = "products/order/test")
     public Object test(@RequestBody OrderedProduct orderedProduct) {
         OrderedProduct orderedProduct1 = new OrderedProduct();
@@ -140,7 +54,6 @@ public class OrderController  extends BaseController{
 
         orderedProduct1.setOrderedProductPk(pk);
         orderedProduct1.setQuantity(33);
-
         return orderedProductRepository.save(orderedProduct1);
     }
 }

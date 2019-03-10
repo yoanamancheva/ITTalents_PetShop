@@ -22,9 +22,9 @@ public class OrderedProductsController extends BaseController {
         return orderedProductRepository.findAll();
     }
 
-    //todo not working
-    @GetMapping(value = "/products/ordered/quantity/{quantity}")
-    public OrderedProduct filterByQuantity(@PathParam("quantity") int quantity) {
-        return orderedProductRepository.findFirstByQuantity(quantity);
-    }
+//    //todo not working
+//    @GetMapping(value = "/products/ordered/quantity/{quantity}")
+//    public OrderedProduct filterByQuantity(@PathParam("quantity") int quantity) {
+//        return orderedProductRepository.findFirstByQuantity(quantity);
+//    }
 }

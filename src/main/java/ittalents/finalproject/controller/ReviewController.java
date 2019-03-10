@@ -26,12 +26,6 @@ import java.util.Optional;
 public class ReviewController extends BaseController {
 
     @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
-    private ProductService productService;
-
-    @Autowired
     private ReviewService reviewService;
 
 //    get product info + reviews for it

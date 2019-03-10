@@ -22,5 +22,4 @@ public class FinalOrderProducts {
     private String address;
     private long userId;
     private double finalPrice;
-
 }
