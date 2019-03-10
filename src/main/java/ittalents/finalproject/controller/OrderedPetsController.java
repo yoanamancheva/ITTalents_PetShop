@@ -16,9 +16,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.sql.Connection;
@@ -41,7 +39,7 @@ public class OrderedPetsController extends BaseController {
 
     @Transactional
     @PostMapping(value = "/orders/add")
-    public Message makeOrder(@RequestBody String address, HttpSession session) throws Exception {
+    public Message makeOrder(@RequestBody String address, HttpSession session) throws BaseException {
         validateLogin(session);
         FinalOrderPets order = null;
         double finalPrice = 0;
@@ -76,9 +74,9 @@ public class OrderedPetsController extends BaseController {
                 orderedPet.setOrderId(order.getId());
                 orderedPet.setQuantity(quantity);
                 dao.insertOrderedPet(orderedPet);
+                removePetFromCartById(idPet, session);
             }
         }
-        removePetsFromCart(session);
         if(order != null && finalPrice != 0) {
             order.setFinalPrice(finalPrice);
             dao.updateOrder(order);
@@ -89,13 +87,19 @@ public class OrderedPetsController extends BaseController {
         }
     }
 
-    private void removePetsFromCart(HttpSession session) {
-        Enumeration<String> pets = session.getAttributeNames();
-        while(pets.hasMoreElements()){
-            String key = pets.nextElement();
-            if(key.contains(PET_STR)){
-                session.removeAttribute(key);
+    private void removePetFromCartById(Long id, HttpSession session)
+            throws PetNotFoundException {
+        if(id != null && dao.getById(id) != null) {
+            Enumeration<String> pets = session.getAttributeNames();
+            while (pets.hasMoreElements()) {
+                String key = pets.nextElement();
+                if (key.contains(PET_STR) && key.contains(id.toString())) {
+                    session.removeAttribute(key);
+                }
             }
+        }
+        else{
+            throw new PetNotFoundException();
         }
     }
 }

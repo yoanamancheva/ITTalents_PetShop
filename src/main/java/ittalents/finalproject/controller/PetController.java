@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -41,24 +42,30 @@ public class PetController extends BaseController {
         return dao.addPet(pet);
     }
 
-//    @GetMapping("/filter")
-//    public Pet getByBreedSubBreed(@RequestParam String breed, @RequestParam String subBreed) throws PetNotFoundException{
-//        Pet pet = null;
-//        if(breed != null && !breed.isEmpty() &&
-//           subBreed != null && !subBreed.isEmpty()) {
-//            pet = dao.getByBreeds(breed, subBreed);
-//        }
-//        if(pet != null){
-//            return pet;
-//        }
-//        else {
-//            throw new PetNotFoundException();
-//        }
-//    }
+    @GetMapping("/filter")
+    public List<PetWithPhotosDto> filterAndSort(@RequestParam (name = "sortBy", required = false) String sortBy,
+                             @RequestParam(name = "breed", required = false) String breed,
+                             @RequestParam(name = "subBreed", required = false) String subBreed,
+                             @RequestParam(name = "fromPrice", required = false) Double fromPrice,
+                             @RequestParam(name = "toPrice", required = false) Double toPrice,
+                             @RequestParam(name = "gender", required = false) String gender,
+                             @RequestParam(name = "fromAge", required = false) Integer fromAge,
+                             @RequestParam(name = "toAge", required = false) Integer toAge,
+                             @RequestParam(name = "postedAfter", required = false) Timestamp postedAfter)
+            throws InvalidInputException {
+        if(sortBy == null && breed == null && subBreed == null && fromPrice == null &&
+            toPrice == null && gender == null && fromAge == null && toAge == null && postedAfter == null) {
+            return dao.getAll();
+        }
+        else {
+            return dao.filterAndSort(sortBy, breed, subBreed,
+                    fromPrice, toPrice, gender, fromAge, toAge, postedAfter);
+        }
+    }
 
     @GetMapping()
     public Object getAll() {
-        List<Pet> pets = dao.getAll();
+        List<PetWithPhotosDto> pets = dao.getAll();
         if(pets.isEmpty()){
             return new Message("There are no pets for sale", LocalDateTime.now(), HttpStatus.NOT_FOUND.value());
         }
@@ -68,7 +75,7 @@ public class PetController extends BaseController {
     }
 
     @GetMapping(value = "/{id}")
-    public Pet getById(@PathVariable long id) throws PetNotFoundException{
+    public Pet getById(@PathVariable Long id) throws PetNotFoundException{
         Pet pet = null;
         if(id > 0){
             pet = dao.getById(id);
@@ -82,7 +89,7 @@ public class PetController extends BaseController {
     }
 
     @DeleteMapping(value = "/{id}/remove")
-    public Message removeById(@PathVariable long id, HttpSession session) throws BaseException {
+    public Message removeById(@PathVariable Long id, HttpSession session) throws BaseException {
         validateLoginAdmin(session);
         if(id > 0 && getById(id) != null) {
             dao.delete(id);
@@ -95,7 +102,7 @@ public class PetController extends BaseController {
 
 
     @PostMapping("/{id}/images")
-    public Message setPetImage(@PathVariable("id") long id, @RequestParam MultipartFile img, HttpSession ses) throws BaseException, IOException {
+    public Message setPetImage(@PathVariable("id") Long id, @RequestParam MultipartFile img, HttpSession ses) throws BaseException, IOException {
         validateLoginAdmin(ses);
         if(!img.isEmpty() && id > 0 && getById(id) != null) {
             String imgTitle = imgContr.uploadImage(img, ses);
@@ -109,7 +116,7 @@ public class PetController extends BaseController {
     }
 
     @GetMapping("/{id}/images")
-    public PetWithPhotosDto getPetImages(@PathVariable long id)throws PetNotFoundException{
+    public PetWithPhotosDto getPetImages(@PathVariable Long id)throws PetNotFoundException{
         Pet p = this.getById(id);
         List<Photo> photos = dao.getImagesById(id);
         PetWithPhotosDto pet = new PetWithPhotosDto(p.getId(), p.getGender(),
