@@ -23,7 +23,6 @@ public class PetWithPhotosDto {
     private int age;
     private Timestamp posted;
     private String petDesc;
-    private boolean inSale;
     private double price;
     private int quantity;
     List<Photo> photos;

@@ -24,14 +24,18 @@ public class PetsInSaleController extends BaseController {
     PetDao dao;
 
     @PostMapping("{id}/forSale")
-    public Message addForSale(@PathVariable("id") long id, @RequestBody PetInSale petInSale, HttpSession session)
+    public Object addForSale(@PathVariable("id") long id, @RequestBody PetInSale petInSale, HttpSession session)
             throws Exception {
         validateInputForSale(petInSale);
         validateLoginAdmin(session);
-        Pet pet = dao.getById(id);
         petInSale.setPetId(id);
-        dao.addForSale(pet, petInSale);
-        return new Message("Pet successfully added for sale", LocalDateTime.now(), HttpStatus.OK.value());
+        petInSale = dao.addForSale(petInSale);
+        if(petInSale != null){
+            return petInSale;
+        }
+        else{
+            return new Message("Pet not successfully added for sale", LocalDateTime.now(), HttpStatus.OK.value());
+        }
     }
 
     @GetMapping("/forSale")

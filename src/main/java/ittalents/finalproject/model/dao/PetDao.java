@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.xml.transform.Result;
 import java.sql.*;
@@ -21,22 +22,24 @@ import java.util.List;
 @Component
 public class PetDao {
 
+    public static final String DISC = "disc";
+    public static final String ORD = "ord";
     @Autowired
     private JdbcTemplate db;
 
     public Pet addPet(Pet pet){
 
-        String insertPet = "INSERT INTO pets(gender, breed, sub_breed, age, pet_desc, price, quantity) VALUES(?, ?, ?, ?, ?, ?, ?);";
+        String insertPet = "INSERT INTO pets(gender, breed, sub_breed, age, pet_desc, price, quantity) VALUES(?, ?, ?, ?, ?, ?, ?, ?);";
         KeyHolder key = new GeneratedKeyHolder();
         db.update((con)-> {
             PreparedStatement ps = con.prepareStatement(insertPet, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, pet.getGender());
             ps.setString(2, pet.getBreed());
             ps.setString(3, pet.getSubBreed());
-            ps.setInt(4, pet.getAge());
-            ps.setString(5, pet.getPetDesc());
-            ps.setDouble(6, pet.getPrice());
-            ps.setInt(7, pet.getQuantity());
+            ps.setInt(5, pet.getAge());
+            ps.setString(6, pet.getPetDesc());
+            ps.setDouble(7, pet.getPrice());
+            ps.setInt(8, pet.getQuantity());
             return ps;
             }, key);
         pet.setPosted(Timestamp.valueOf(LocalDateTime.now()));
@@ -45,7 +48,7 @@ public class PetDao {
     }
 
     public List<Pet> getAll(){
-        String getAll = "SELECT id, gender, breed, sub_breed, age, posted, pet_desc, in_sale, price, quantity, posted FROM pets ORDER BY posted DESC;";
+        String getAll = "SELECT id, gender, breed, sub_breed, age, posted, pet_desc, price, quantity, posted FROM pets ORDER BY posted DESC;";
         List<Pet> pets = db.query(getAll, (resultSet, i) -> toPet(resultSet));
         return pets;
     }
@@ -57,7 +60,6 @@ public class PetDao {
                 resultSet.getInt("age"),
                 resultSet.getTimestamp("posted"),
                 resultSet.getString("pet_desc"),
-                resultSet.getBoolean("in_sale"),
                 resultSet.getDouble("price"),
                 resultSet.getInt("quantity"));
         pet.setId(resultSet.getLong("id"));
@@ -66,9 +68,9 @@ public class PetDao {
 
     public Pet getById(long id){
         String getById = "SELECT id, gender, breed, sub_breed, age, posted, " +
-                "pet_desc, in_sale, price, quantity FROM pets WHERE id = ?;";
+                "pet_desc, price, quantity FROM pets WHERE id = ?;";
         Pet pet = db.query(getById, new Object[]{id}, (resultSet) ->
-                {return returnPet(resultSet);});
+                {return returnPet(resultSet, ORD);});
         return pet;
     }
 
@@ -98,7 +100,7 @@ public class PetDao {
     }
 
     public List<PetWithPhotosDto> getPetsWithPhotos() {
-        String getPets = "SELECT p.id, ph.id, p.gender, p.breed, p.sub_breed, p.age, p.posted, p.pet_desc, p.in_sale, p.quantity, " +
+        String getPets = "SELECT p.id, ph.id, p.gender, p.breed, p.sub_breed, p.age, p.posted, p.pet_desc, p.quantity, " +
                 "ph.photo_path, p.price FROM pets AS p JOIN pets_photos AS ph ON p.id = ph.pet_id";
         List<Photo> photos = db.query(getPets, (rs, i) -> toPhoto(rs));
 
@@ -115,46 +117,27 @@ public class PetDao {
             resultSet.getInt("p.age"),
             resultSet.getTimestamp("p.posted"),
             resultSet.getString("p.pet_desc"),
-            resultSet.getBoolean("p.in_sale"),
             resultSet.getDouble("p.price"),
             resultSet.getInt("p.quantity"),
             photos);
     }
 
 
-    public void addForSale(Pet pet, PetInSale petForSale)throws Exception{
-        Connection con = null;
-        PreparedStatement ps = null;
-        try {
-            con = db.getDataSource().getConnection();
-            con.setAutoCommit(false);
-            String addForSale = "INSERT INTO pets_in_sale(pet_id, start_date, end_date, discount_price) VALUES(?, ?, ?, ?);";
-            String updatePet = "UPDATE pets SET in_sale = 1 WHERE id = ?";
+    public PetInSale addForSale(PetInSale petForSale)throws Exception{
 
-            ps = con.prepareStatement(addForSale, Statement.RETURN_GENERATED_KEYS);
+        String addForSale = "INSERT INTO pets_in_sale(pet_id, start_date, end_date, discount_price) VALUES(?, ?, ?, ?);";
+        KeyHolder key = new GeneratedKeyHolder();
+        db.update((con) -> {
+            PreparedStatement ps = con.prepareStatement(addForSale, Statement.RETURN_GENERATED_KEYS);
             ps.setLong(1, petForSale.getPetId());
             ps.setTimestamp(2, petForSale.getStartDate());
             ps.setTimestamp(3, petForSale.getEndDate());
             ps.setDouble(4, petForSale.getDiscountPrice());
-            ps.executeUpdate();
-            petForSale.setId(ps.getGeneratedKeys().getLong("id"));
+            return ps;
+        }, key);
+        petForSale.setId(key.getKey().longValue());
 
-            ps = con.prepareStatement(updatePet);
-            ps.setLong(1, pet.getId());
-            ps.executeUpdate();
-
-            con.commit();
-            System.out.println("Transaction made successfully");
-        }
-        catch(Exception e){
-            con.rollback();
-            throw new Exception();
-        }
-        finally {
-            con.setAutoCommit(true);
-            con.close();
-            ps.close();
-        }
+        return petForSale;
     }
 
     public List<PetForSaleDto> listPetsForSale() {
@@ -175,15 +158,28 @@ public class PetDao {
 
     public Pet getPetForSaleById(long id){
         String petForSale = "SELECT p.id, p.gender, p.breed, p.sub_breed, p.age, p.posted, p.pet_desc,\n" +
-                            " ps.discount_price AS price, p.quantity, p.in_sale" +
+                            " ps.discount_price, p.quantity " +
                             "FROM pets_in_sale AS ps\n" +
                             "JOIN pets AS p\n" +
                             "ON ps.pet_id = p.id\n" +
-                            "WHERE p.id = ? AND" +
-                            "ps.start_date <= CURRENT_DATE() AND" +
+                            "WHERE p.id = ? AND " +
+                            "ps.start_date <= CURRENT_DATE() AND " +
                             "ps.end_date >= CURRENT_DATE();";
         Pet pet = db.query(petForSale, new Object[]{id}, (resultSet) ->
-            {return returnPet(resultSet);});
+            {return returnPet(resultSet, DISC);});
+        return pet;
+    }
+
+    private Pet toPetDisc(ResultSet resultSet) throws SQLException{
+        Pet pet = new Pet(resultSet.getString("gender"),
+                resultSet.getString("breed"),
+                resultSet.getString("sub_breed"),
+                resultSet.getInt("age"),
+                resultSet.getTimestamp("posted"),
+                resultSet.getString("pet_desc"),
+                resultSet.getDouble("ps.discount_price"),
+                resultSet.getInt("quantity"));
+        pet.setId(resultSet.getLong("id"));
         return pet;
     }
 
@@ -211,21 +207,26 @@ public class PetDao {
 
     public Pet getByBreeds(String breed, String subBreed) {
         String getByName = "SELECT id, gender, breed, sub_breed, age, " +
-                           "posted, pet_desc, in_sale, price, quantity, posted " +
+                           "posted, pet_desc, price, quantity, posted " +
                            "FROM pets\n" +
                            "WHERE breed LIKE ? AND sub_breed LIKE ?;";
         Pet pet = db.query(getByName, new Object[]{breed, subBreed},
-                (resultSet) -> {return returnPet(resultSet);});
+                (resultSet) -> {return returnPet(resultSet, ORD);});
         return pet;
     }
 
-    public Pet returnPet(ResultSet resultSet) throws SQLException{
+    public Pet returnPet(ResultSet resultSet, String type) throws SQLException{
         boolean hasNext = resultSet.next();
         if(!hasNext) {
             return null;
         }
         else {
-            return toPet(resultSet);
+            if(type.equals(ORD)) {
+                return toPet(resultSet);
+            }
+            else{
+                return toPetDisc(resultSet);
+            }
         }
     }
 
@@ -245,8 +246,20 @@ public class PetDao {
         return order;
     }
 
+    public int updateOrder(FinalOrderPets order){
+        String update = "UPDATE all_orders_pets SET final_price = ? WHERE id = ?";
+        int rows = db.update((con) -> {
+            PreparedStatement ps = con.prepareStatement(update);
+            ps.setDouble(1, order.getFinalPrice());
+            ps.setLong(2, order.getId());
+            return ps;
+        });
+
+        return rows;
+    }
+
     public OrderedPet insertOrderedPet(OrderedPet orderedPet) {
-        String insertOrderedPet = "INERT INTO pets_in_order(order_id, pet_id, quantity) VALUES (?, ?, ?)";
+        String insertOrderedPet = "INSERT INTO pets_in_order(order_id, pet_id, quantity) VALUES (?, ?, ?)";
         db.update((con)-> {
             PreparedStatement ps = con.prepareStatement(insertOrderedPet);
             ps.setLong(1, orderedPet.getOrderId());

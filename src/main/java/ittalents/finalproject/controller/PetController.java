@@ -31,7 +31,7 @@ public class PetController extends BaseController {
     @Autowired
     private ImageController imgContr;
 
-    //validation for existing id
+    //TODO validation for existing id
 
     @PostMapping(value = "/add")
     public Pet add(@RequestBody Pet pet, HttpSession session) throws BaseException {
@@ -114,7 +114,7 @@ public class PetController extends BaseController {
         List<Photo> photos = dao.getImagesById(id);
         PetWithPhotosDto pet = new PetWithPhotosDto(p.getId(), p.getGender(),
                     p.getBreed(), p.getSubBreed(), p.getAge(), p.getPosted(), p.getPetDesc(),
-                    p.isInSale(), p.getPrice(), p.getQuantity(), photos);
+                    p.getPrice(), p.getQuantity(), photos);
         return pet;
     }
 

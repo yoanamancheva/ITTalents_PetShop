@@ -6,10 +6,16 @@ import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.pojos.orders.FinalOrderPets;
 import ittalents.finalproject.model.pojos.pets.OrderedPet;
 import ittalents.finalproject.model.pojos.pets.Pet;
+import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.PetNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,89 +23,79 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpSession;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Enumeration;
+
+import static ittalents.finalproject.controller.CartController.PET_STR;
 
 
 @RestController
 public class OrderedPetsController extends BaseController {
 
     @Autowired
-    JdbcTemplate db;
-
-    @Autowired
     PetDao dao;
 
+    @Autowired
+    private TransactionTemplate trans;
+
+    @Transactional
     @PostMapping(value = "/orders/add")
-    public Message makeOrder(@RequestBody String address, HttpSession session) throws Exception{
-        //validate if the user is logged
+    public Message makeOrder(@RequestBody String address, HttpSession session) throws Exception {
         validateLogin(session);
-        //transaction
-        Connection con = null;
-        PreparedStatement ps = null;
-        try {
-            con = db.getDataSource().getConnection();
-            con.setAutoCommit(false);
-            //make new FinalOrder
-            FinalOrderPets order = new FinalOrderPets(address);
-            double finalPrice = 0;
-            //get user from session with id
-            //set userId to FinalOrder
-            User user = (User)session.getAttribute(LOGGED_USER);
-            order.setUserId(user.getId());
-            order.setFinalPrice(finalPrice);
-            //get all pets from session
-            Enumeration<String> attr = session.getAttributeNames();
-            while(attr.hasMoreElements()){
-                String key = attr.nextElement();
-                System.out.println(key);
-                if(key.contains("_pet")){
-                    int quantity = (int)session.getAttribute(key);
-                    key = key.replace("_pet", "");
-                    OrderedPet orderedPet = new OrderedPet();
-                    Pet pet = dao.getPetForSaleById(Long.getLong(key));
-                    if(pet == null){
-                        pet = dao.getById(Long.getLong(key));
-                        if(pet == null) {
-                            throw new PetNotFoundException();
-                        }
-                        else{
-                            orderedPet.setPetId(Long.getLong(key));
-                            finalPrice += pet.getPrice() * quantity;
-                            orderedPet.setOrderId(order.getId());
-                            orderedPet.setQuantity(quantity);
-                        }
-                    }
-                    else{
-                        orderedPet.setPetId(Long.getLong(key));
-                        finalPrice += pet.getPrice() * quantity;
-                        orderedPet.setOrderId(order.getId());
-                        orderedPet.setQuantity(quantity);
-                    }
-                    dao.insertOrderedPet(orderedPet);
-                }
+        FinalOrderPets order = null;
+        double finalPrice = 0;
+        Enumeration<String> attr = session.getAttributeNames();
+        while(attr.hasMoreElements()){
+            String key = attr.nextElement();
+            if(key.contains(LOGGED_USER)){
+                continue;
             }
-            //the length of array with pets the more products added in OrderedPet
-            //every iteration set the pet_id with id of FinalOrder
-            //check if the pet is in sale if yes take the price from there if not take the price from the main table
-            //count the price of the pets in one variable
-            //set the count to the final price of the FinalOrder
-
-            //remove items from cart
+            if(key.contains(PET_STR)) {
+                order = new FinalOrderPets(address);
+                User user = (User)session.getAttribute(LOGGED_USER);
+                order.setUserId(user.getId());
+                order.setFinalPrice(finalPrice);
+                dao.insertOrder(order);
+                int quantity = (int) session.getAttribute(key);
+                key = key.replace(PET_STR, "");
+                long idPet = Long.valueOf(key);
+                OrderedPet orderedPet = new OrderedPet();
+                Pet petInSale = dao.getPetForSaleById(idPet);
+                Pet pet = dao.getById(idPet);
+                if (petInSale != null) {
+                    finalPrice += petInSale.getPrice() * quantity;
+                }
+                else if(pet != null) {
+                    finalPrice += pet.getPrice() * quantity;
+                }
+                else{
+                    throw new PetNotFoundException();
+                }
+                orderedPet.setPetId(idPet);
+                orderedPet.setOrderId(order.getId());
+                orderedPet.setQuantity(quantity);
+                dao.insertOrderedPet(orderedPet);
+            }
+        }
+        removePetsFromCart(session);
+        if(order != null && finalPrice != 0) {
             order.setFinalPrice(finalPrice);
-            dao.insertOrder(order);
+            dao.updateOrder(order);
+            return new Message("Order made successfully", LocalDateTime.now(), HttpStatus.OK.value());
+        }
+        else{
+            return new Message("Cart is empty!", LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
+        }
+    }
 
+    private void removePetsFromCart(HttpSession session) {
+        Enumeration<String> pets = session.getAttributeNames();
+        while(pets.hasMoreElements()){
+            String key = pets.nextElement();
+            if(key.contains(PET_STR)){
+                session.removeAttribute(key);
+            }
         }
-        catch(Exception e){
-            con.rollback();
-            throw new Exception();
-        }
-        finally {
-            con.setAutoCommit(true);
-            con.close();
-            ps.close();
-        }
-
-        return new Message("Order made succesfully", LocalDateTime.now(), HttpStatus.OK.value());
     }
 }
