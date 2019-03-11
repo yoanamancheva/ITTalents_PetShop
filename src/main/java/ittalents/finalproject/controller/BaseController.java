@@ -98,12 +98,12 @@ public abstract class BaseController {
         return new Message(e.getMessage(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
     }
 
-//    @ExceptionHandler({Exception.class})
-//    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-//    public Message allExceptionHandler(Exception e){
-//        log.error(e.getMessage());
-//        return new Message(new Exception("Sorry, the server is temporary down. ").getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
-//    }
+    @ExceptionHandler({Exception.class})
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public Message allExceptionHandler(Exception e){
+        log.error(e.getMessage());
+        return new Message(new Exception("Sorry, the server is temporary down. ").getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+    }
 
 
 
