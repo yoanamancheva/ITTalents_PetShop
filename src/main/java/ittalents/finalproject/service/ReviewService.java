@@ -50,7 +50,7 @@ public class ReviewService {
             if(addReviewDTO.getRating() > 0 && addReviewDTO.getRating() < 6) {
                 Review review = new Review(product.get(), user.get(), addReviewDTO.getReview(), addReviewDTO.getRating());
                 reviewRepository.save(review);
-                return new ListReview(addReviewDTO.getReview(), addReviewDTO.getRating(), user.get().getUsername());
+                return new ListReview(review.getId(), addReviewDTO.getReview(), addReviewDTO.getRating(), user.get().getUsername());
             }
             else {
                 throw new InvalidInputException("Rating must be between 1 and 5.");

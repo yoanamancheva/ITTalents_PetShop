@@ -23,6 +23,7 @@ public class PetsInSaleController extends BaseController {
     @PostMapping("{id}/forSale")
     public Object addForSale(@PathVariable("id") Long id, @RequestBody PetInSale petInSale, HttpSession session)
              throws BaseException{
+        petInSale.setId(id);
         validateInputForSale(petInSale);
         validateLoginAdmin(session);
         return service.addForSale(id, petInSale);
@@ -40,8 +41,9 @@ public class PetsInSaleController extends BaseController {
 
 
     private void validateInputForSale(PetInSale pet)throws InvalidInputException {
-        if(pet.getDiscountPrice() < 0 || pet.getStartDate() == null || pet.getEndDate() == null
-                || pet.getStartDate().compareTo(pet.getEndDate()) > 0
+        if(pet.getStartDate() == null || pet.getEndDate() == null ||
+                pet.getDiscountPrice() == null || pet.getDiscountPrice() < 0 ||
+                pet.getStartDate().compareTo(pet.getEndDate()) > 0
                 || pet.getStartDate().compareTo(pet.getEndDate()) == 0){
 
             throw new InvalidInputException("Invalid input");

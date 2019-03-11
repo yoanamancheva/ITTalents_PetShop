@@ -186,6 +186,12 @@ public class ProductService {
 
 //    add existing product to sale
     public ProductInSale addProductIntoSale(ProductInSale productInSale) throws BaseException {
+
+        if(productInSale.getProductId() == null || productInSale.getStartDate() == null || productInSale.getEndDate() == null
+           || productInSale.getDiscountPrice() == null) {
+            throw new InvalidInputException("Invalid input. Fields can not be empty.");
+        }
+        else
         if(productRepository.findById(productInSale.getProductId()).isPresent()) {
             if(productInSale.getStartDate().compareTo(productInSale.getEndDate()) > 0) {
                 throw new InvalidInputException("The start date can not be after the end date.");
@@ -203,8 +209,8 @@ public class ProductService {
 
 // validations-----------------------------------------------------------------------------------------
     private void validateProductInput(Product product)throws BaseException {
-        if(product.getName() == null || product.getCategory() == null || product.getPrice() < 0
-                || product.getQuantity() < 0 || product.getManifacturer() == null
+        if(product.getName() == null || product.getCategory() == null || product.getPrice() == null || product.getPrice() < 0
+                || product.getQuantity() == null ||  product.getQuantity() < 0 || product.getManifacturer() == null
                 || product.getDescription() == null ){
             throw new InvalidInputException("Invalid input for the product input.");
         }

@@ -15,16 +15,16 @@ import java.util.List;
 @AllArgsConstructor
 public class PetForSaleDto {
 
-    private long petId;
+    private Long petId;
     private String gender;
     private String breed;
     private String subBreed;
-    private int age;
+    private Integer age;
     private String petDesc;
-    private int quantity;
-    private long discountId;
+    private Integer quantity;
+    private Long discountId;
     private Timestamp startDate;
     private Timestamp endDate;
-    private double discountPrice;
+    private Double discountPrice;
     private List<Photo> photos;
 }

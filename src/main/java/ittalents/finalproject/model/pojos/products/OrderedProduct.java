@@ -1,6 +1,7 @@
 package ittalents.finalproject.model.pojos.products;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -14,23 +15,20 @@ import java.util.Objects;
 @Getter
 @Entity
 @Table(name = "products_in_order")
-//@IdClass(OrderedProduct.OrderedProductPk.class)
 public class OrderedProduct implements Serializable{
 
 
     @EmbeddedId
     private OrderedProductPk orderedProductPk;
-//    private long productId;
-//    private long orderId;
     @Column(name = "quantity")
     private int quantity;
 
     @Transient
+    @JsonIgnore
     private long midProductId;
     @Transient
+    @JsonIgnore
     private long midOrderId;
-//    private long userId;
-
 
 
     @ToString

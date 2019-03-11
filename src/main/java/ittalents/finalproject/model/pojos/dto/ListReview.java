@@ -15,7 +15,7 @@ public class ListReview {
     @Id
     private Long id;
     private String review;
-    private int rating;
+    private Integer rating;
     private String user;
 
     public ListReview(String review, int rating , String username) {

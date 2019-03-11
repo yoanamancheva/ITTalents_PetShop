@@ -127,10 +127,10 @@ public class PetDao {
                 " FROM pets AS p\n" +
                 " JOIN pets_in_sale AS ps\n" +
                 " ON p.id = ps.pet_id\n" +
-                " JOIN pets_photos AS ph\n" +
+                " LEFT JOIN pets_photos AS ph\n" +
                 " ON p.id = ph.pet_id\n" +
-                "WHERE ps.start_date <= CURRENT_DATE() AND\n" +
-                "ps.end_date > CURRENT_DATE()";
+                "WHERE ps.start_date <= CURRENT_TIMESTAMP() AND\n" +
+                "ps.end_date > CURRENT_TIMESTAMP()";
         List<PetForSaleDto> pets = db.query(petsForSale + " GROUP BY ps.id;", (rs, i) ->
                 toPetForSale(rs, getImagesById(rs.getLong("p.id"))));
         return pets;
@@ -143,10 +143,11 @@ public class PetDao {
                             "JOIN pets AS p\n" +
                             "ON ps.pet_id = p.id\n" +
                             "WHERE p.id = ? AND " +
-                            "ps.start_date <= CURRENT_DATE() AND " +
-                            "ps.end_date >= CURRENT_DATE();";
+                            "ps.start_date <= CURRENT_TIMESTAMP() AND " +
+                            "ps.end_date >= CURRENT_TIMESTAMP ();";
         Pet pet = db.query(petForSale, new Object[]{id}, (resultSet) ->
             {return returnPet(resultSet, DISC);});
+        System.out.println(pet);
         return pet;
     }
 
@@ -215,7 +216,6 @@ public class PetDao {
             .filter(pet -> gender == null || pet.getGender().equalsIgnoreCase(gender))
             .filter(pet -> fromAge == null || pet.getAge() >= fromAge)
             .filter(pet -> toAge == null || pet.getAge() < toAge)
-            .filter(pet -> postedAfter == null || pet.getPosted().compareTo(postedAfter) >= 0)
             .sorted((pet1, pet2) -> {
                 if (sortBy == null) {
                     return 1;

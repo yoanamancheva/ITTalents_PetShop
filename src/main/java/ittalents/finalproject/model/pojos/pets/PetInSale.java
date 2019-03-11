@@ -14,11 +14,11 @@ import java.time.LocalDateTime;
 @Setter
 public class PetInSale {
 
-    private long id;
-    private long petId;
+    private Long id;
+    private Long petId;
     private Timestamp startDate;
     private Timestamp endDate;
-    private int discountPrice;
+    private Integer discountPrice;
 
     public PetInSale(Timestamp startDate, Timestamp endDate, int discountPrice) {
         this.startDate = startDate;

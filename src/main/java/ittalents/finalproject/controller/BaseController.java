@@ -6,6 +6,7 @@ import ittalents.finalproject.util.exceptions.*;
 import org.apache.log4j.Logger;
 import ittalents.finalproject.model.pojos.User;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -89,6 +90,13 @@ public abstract class BaseController {
         return new Message(e.getMessage(), LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value());
     }
 
+
+    @ExceptionHandler({MissingServletRequestParameterException.class})
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public Message missingRequestParamHandler(Exception e) {
+        log.error(e.getMessage());
+        return new Message(e.getMessage(), LocalDateTime.now(), HttpStatus.BAD_REQUEST.value());
+    }
 
 //    @ExceptionHandler({Exception.class})
 //    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)

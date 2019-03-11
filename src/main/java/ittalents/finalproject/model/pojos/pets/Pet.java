@@ -15,15 +15,15 @@ import java.time.LocalDateTime;
 @ToString
 public class Pet {
 
-    private long id;
+    private Long id;
     private String gender;
     private String breed;
     private String subBreed;
-    private int age;
+    private Integer age;
     private Timestamp posted;
     private String petDesc;
-    private double price;
-    private int quantity;
+    private Double price;
+    private Integer quantity;
 
     public Pet(String gender, String breed, String subBreed, int age, Timestamp posted, String description, double price, int quantity) {
         this.gender = gender;

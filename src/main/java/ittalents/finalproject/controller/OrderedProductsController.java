@@ -16,15 +16,10 @@ public class OrderedProductsController extends BaseController {
     @Autowired
     private OrderedProductRepository orderedProductRepository;
 
-    //working
+
     @GetMapping(value = "/products/ordered")
     public List<OrderedProduct> allOrderedProducts () {
         return orderedProductRepository.findAll();
     }
 
-//    //todo not working
-//    @GetMapping(value = "/products/ordered/quantity/{quantity}")
-//    public OrderedProduct filterByQuantity(@PathParam("quantity") int quantity) {
-//        return orderedProductRepository.findFirstByQuantity(quantity);
-//    }
 }

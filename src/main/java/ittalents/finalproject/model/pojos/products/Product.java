@@ -24,11 +24,11 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
     private String name;
     private String category;
-    private double price;
-    private int quantity;
+    private Double price;
+    private Integer quantity;
     private String manifacturer;
     private String description;
     private String photo = "no photo";

@@ -81,6 +81,7 @@ public class PetService {
     }
 
 
+//    TODO add column DELETED in pets when pet is deleted
     public Message removeById( Long id) throws BaseException {
         if(id != null && getById(id) != null) {
             dao.delete(id);
@@ -131,6 +132,10 @@ public class PetService {
 
     public Pet updateQuantity( Long id, Pet pet)
             throws BaseException{
+        if(pet.getQuantity() == null || pet.getQuantity() < 0 ||
+            pet.getQuantity() > 20){
+            throw new InvalidInputException("Invalid input!");
+        }
         Pet updatedPet = getById(id);
         updatedPet.setQuantity(pet.getQuantity());
         dao.updateQuantity(updatedPet);
@@ -138,10 +143,13 @@ public class PetService {
     }
 
     private void validateInput(Pet pet) throws BaseException{
-        if(pet.getGender() == null || pet.getGender().equals("") || pet.getAge() < 0 || pet.getAge() > 20
-                || pet.getBreed() == null || pet.getBreed().equals("") ||  pet.getSubBreed().equals("")
-                || pet.getSubBreed() == null || pet.getQuantity() > 20
-                || pet.getQuantity() < 1 || pet.getPrice() < 0 || (!pet.getGender().equals("M")
+        if(pet.getGender() == null || pet.getBreed() == null || pet.getSubBreed() == null ||
+                pet.getQuantity() == null || pet.getPrice() == null || pet.getAge() == null ||
+                pet.getPetDesc() == null || pet.getGender().equals("") ||
+                pet.getAge() < 0 || pet.getAge() > 20 ||
+                pet.getBreed().equals("") ||  pet.getSubBreed().equals("") ||
+                pet.getQuantity() > 20 || pet.getQuantity() < 1 ||
+                pet.getPrice() < 0 || (!pet.getGender().equals("M")
                 && !pet.getGender().equals("F"))){
             throw new InvalidInputException("Invalid input.");
         }

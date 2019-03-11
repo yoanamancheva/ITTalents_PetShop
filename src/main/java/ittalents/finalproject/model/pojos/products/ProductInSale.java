@@ -18,9 +18,9 @@ public class ProductInSale {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    private long productId;
+    private Long id;
+    private Long productId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private double discountPrice;
+    private Double discountPrice;
     }
