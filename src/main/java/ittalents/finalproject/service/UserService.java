@@ -4,9 +4,11 @@ import ittalents.finalproject.controller.UserController;
 import ittalents.finalproject.model.pojos.Message;
 import ittalents.finalproject.model.pojos.User;
 import ittalents.finalproject.model.pojos.dto.ChangePasswordUserDTO;
+import ittalents.finalproject.model.pojos.dto.UserDTO;
 import ittalents.finalproject.model.repos.UserRepository;
 import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.InvalidInputException;
+import ittalents.finalproject.util.exceptions.UserNotFoundException;
 import ittalents.finalproject.util.mail.MailUtil;
 import ittalents.finalproject.util.mail.Notificator;
 import org.apache.log4j.Logger;
@@ -27,6 +29,7 @@ import static ittalents.finalproject.controller.BaseController.LOGGED_USER;
 @Service
 public class UserService {
 
+    public static final int MIN_SYMBOLS = 7;
     @Autowired
     private Notificator notificator;
 
@@ -40,7 +43,7 @@ public class UserService {
 
 
 //    register user
-    public User registerUser(User user, HttpSession session) throws BaseException {
+    public UserDTO registerUser(User user, HttpSession session) throws BaseException {
 
         validateUserInput(user);
         if (user.isNotifications()) {
@@ -60,11 +63,13 @@ public class UserService {
             }
         }).start();
         session.setAttribute(LOGGED_USER, user);
-        return user;
+        UserDTO userDTO = new UserDTO(user.getId(), user.getUsername(), user.getFirstName(), user.getLastName(),
+                                        user.getEmail(), user.isAdministrator(), user.isNotifications(), user.isVerified());
+        return userDTO;
     }
 
 //    register admin
-    public User registerAdmin(User user, HttpSession session) throws BaseException{
+    public UserDTO registerAdmin(User user, HttpSession session) throws BaseException{
         validateUserInput(user);
         user.setAdministrator(true);
         session.setAttribute(LOGGED_USER, user);
@@ -81,7 +86,9 @@ public class UserService {
                 log.error(e.getMessage());
             }
         }).start();
-        return user;
+        UserDTO userDTO = new UserDTO(user.getId(), user.getUsername(), user.getFirstName(), user.getLastName(),
+                user.getEmail(), user.isAdministrator(), user.isNotifications(), user.isVerified());
+        return userDTO;
     }
 
 //    confirm email
@@ -142,7 +149,7 @@ public class UserService {
         if(session.getAttribute(LOGGED_USER) == null) {
             Optional<User> user = userRepository.findById(id);
             if (user.isPresent()) {
-                String newPassword = new Random().ints(5, 33, 122)
+                String newPassword = new Random().ints(8, 33, 122)
                         .collect(StringBuilder::new,
                                 StringBuilder::appendCodePoint, StringBuilder::append)
                         .toString();
@@ -175,7 +182,7 @@ public class UserService {
     public Message userDeleteProfile(User userSession, User user) throws BaseException{
 
         if(userRepository.findById(userSession.getId()).isPresent()) {
-            if(userSession.getPassword().equals(user.getPassword()) && userSession.getEmail().equals(user.getEmail())) {
+            if(BCrypt.checkpw(user.getPassword(), userSession.getPassword()) && userSession.getEmail().equals(user.getEmail())) {
                 userSession.setUsername("deleted");
                 userSession.setFirstName("deleted");
                 userSession.setLastName("deleted");
@@ -198,24 +205,28 @@ public class UserService {
             if(BCrypt.checkpw(pendingUser.getPassword(), user.getPassword())
                     && user.getUsername().equals(pendingUser.getUsername())) {
                 if(!BCrypt.checkpw(pendingUser.getNewPassword(), user.getPassword())) {
-                    if (pendingUser.getNewPassword().length() >= 3) {
-                        String cryptedPass = BCrypt.hashpw(pendingUser.getNewPassword(), BCrypt.gensalt());
-                        user.setPassword(cryptedPass);
-                        userRepository.save(user);
-                        new Thread(()-> {
-                            try {
-                                mailUtil.sendmail(user.getEmail(), MailUtil.SUCCESSFUL_NEW_PASSWORD_SUBJECT,
-                                        MailUtil.SUCCESSFUL_NEW_PASSWORD_CONTENT +
-                                                " Your new password is \"" + pendingUser.getNewPassword());
-                            } catch (MessagingException e) {
-                                e.printStackTrace();
-                                log.error(e.getMessage());
-                            }
-                        }).start();
-                        return new Message("You successfully changed your password.", LocalDateTime.now(),
-                                HttpStatus.OK.value());
+                    if(pendingUser.getNewPassword() != null) {
+                        if (pendingUser.getNewPassword().length() >= MIN_SYMBOLS) {
+                            String cryptedPass = BCrypt.hashpw(pendingUser.getNewPassword(), BCrypt.gensalt());
+                            user.setPassword(cryptedPass);
+                            userRepository.save(user);
+                            new Thread(() -> {
+                                try {
+                                    mailUtil.sendmail(user.getEmail(), MailUtil.SUCCESSFUL_NEW_PASSWORD_SUBJECT,
+                                            MailUtil.SUCCESSFUL_NEW_PASSWORD_CONTENT +
+                                                    " Your new password is \"" + pendingUser.getNewPassword());
+                                } catch (MessagingException e) {
+                                    e.printStackTrace();
+                                    log.error(e.getMessage());
+                                }
+                            }).start();
+                            return new Message("You successfully changed your password.", LocalDateTime.now(),
+                                    HttpStatus.OK.value());
+
+                        }
+                        throw new InvalidInputException("New password should be more than " + MIN_SYMBOLS + " symbols.");
                     }
-                    throw new InvalidInputException("New password should be more than 3 symbols.");
+                    throw new InvalidInputException("New password can not be empty.");
                 }
                 throw new InvalidInputException("New password can not be the same as old password.");
             }
@@ -225,12 +236,23 @@ public class UserService {
     }
 
 
+    public Message unsubscribeFromNotifications(User user) throws BaseException{
+        if(user.isNotifications()) {
+            notificator.removeObserver(user);
+            user.setNotifications(false);
+            userRepository.save(user);
+            return new Message("You successfully unsubscribed.", LocalDateTime.now(), HttpStatus.OK.value());
+        }
+        else {
+            throw new UserNotFoundException("You are not subscribed.");
+        }
+    }
 //    validations ------------------------------------------------------------------------------------------------------
     private void validateUserInput( User user) throws BaseException {
+        validateNullInput(user);
         String newUsername = user.getUsername();
         String newEmail = user.getEmail();
         newEmail = newEmail.trim();
-        validateNullInput(user);
         user.setPassword(user.getPassword().trim());
         user.setPassword2(user.getPassword2().trim());
         if (getUserByName(newUsername) != null) {
@@ -239,8 +261,8 @@ public class UserService {
         else if( getUserByEmail(newEmail) != null) {
             throw new InvalidInputException("This email is already user by another user.");
         }
-        else if(user.getPassword().length() < 3 ) {
-            throw new InvalidInputException("The password should be more than 3 symbols");
+        else if(user.getPassword().length() < MIN_SYMBOLS) {
+            throw new InvalidInputException("The password should be more than " + MIN_SYMBOLS + " symbols");
         }
         else if (!user.getPassword().equals(user.getPassword2()) ) {
             throw new InvalidInputException("The passwords don't match.");
@@ -259,6 +281,12 @@ public class UserService {
         }
         if(user.getLastName() == null) {
             throw new InvalidInputException("The last name should not be empty");
+        }
+        if(user.getPassword() == null || user.getPassword2() == null) {
+            throw new InvalidInputException("Password can not be empty.");
+        }
+        if(user.getEmail() == null) {
+            throw new InvalidInputException("Email can not be empty.");
         }
     }
 

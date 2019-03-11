@@ -30,7 +30,6 @@ public class Notificator extends BaseController {
         this.users.remove(user);
     }
 
-    //todo - catch exception
     public void sendNews(String subject, String content) {
         new Thread(() -> {
         for (User user : this.users) {

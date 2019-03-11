@@ -1,5 +1,6 @@
 package ittalents.finalproject.controller;
 
+import ittalents.finalproject.model.pojos.dto.UserDTO;
 import ittalents.finalproject.service.UserService;
 import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.InvalidInputException;
@@ -32,7 +33,7 @@ public class UserController extends BaseController{
     private UserService userService;
 
     @PostMapping(value = "register")
-    public User addUser(@RequestBody User user, HttpSession session) throws BaseException {
+    public UserDTO addUser(@RequestBody User user, HttpSession session) throws BaseException {
         return userService.registerUser(user, session);
     }
 
@@ -43,7 +44,7 @@ public class UserController extends BaseController{
     }
 
     @PostMapping(value = "register/admin")
-    public User addAdmin(@RequestBody User user , HttpSession session) throws BaseException{
+    public UserDTO addAdmin(@RequestBody User user , HttpSession session) throws BaseException{
         return userService.registerAdmin(user, session);
     }
 
@@ -77,6 +78,12 @@ public class UserController extends BaseController{
     }
 
 
+    @GetMapping(value = "profile/unsubscribe")
+    public Message unsubscribe(HttpSession session) throws BaseException{
+        validateLogin(session);
+        User user = (User)session.getAttribute(LOGGED_USER);
+        return userService.unsubscribeFromNotifications(user);
+    }
 
 
 
