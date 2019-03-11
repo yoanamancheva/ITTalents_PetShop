@@ -10,6 +10,7 @@ import ittalents.finalproject.util.exceptions.InvalidInputException;
 import ittalents.finalproject.util.mail.MailUtil;
 import ittalents.finalproject.util.mail.Notificator;
 import org.apache.log4j.Logger;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,6 @@ public class UserService {
     static Logger log = Logger.getLogger(UserController.class.getName());
 
 
-
 //    register user
     public User registerUser(User user, HttpSession session) throws BaseException {
 
@@ -46,6 +46,10 @@ public class UserService {
         if (user.isNotifications()) {
             notificator.addObserver(user);
         }
+        String cryptedPass = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        user.setPassword(cryptedPass);
+        user.setPassword2(cryptedPass);
+
         userRepository.save(user);
         new Thread(() -> {
             try {
@@ -64,6 +68,9 @@ public class UserService {
         validateUserInput(user);
         user.setAdministrator(true);
         session.setAttribute(LOGGED_USER, user);
+        String cryptedPass = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+        user.setPassword(cryptedPass);
+        user.setPassword2(cryptedPass);
         userRepository.save(user);
         new Thread(() -> {
             try {
@@ -114,10 +121,16 @@ public class UserService {
 //        if(session.getAttribute(LOGGED_USER) != null) {
 //            throw new InvalidInputException("You are already logged in.");
 //        }
+        pendingUsername = pendingUsername.trim();
+        pendingPassword = pendingPassword.trim();
+
+        User dbUser = getUserByName(pendingUsername);
+        String dbPass = dbUser.getPassword();
+
         if(getUserByName(pendingUsername) != null ) {
-            if (getUserByName(pendingUsername).getUsername().equals(pendingUsername) &&
-                    getUserByName(pendingUsername).getPassword().equals(pendingPassword)) {
-                session.setAttribute(LOGGED_USER, getUserByName(pendingUsername));
+            if (dbUser.getUsername().equals(pendingUsername) &&
+                    BCrypt.checkpw(pendingPassword, dbPass)) {
+                session.setAttribute(LOGGED_USER, dbUser);
                 return new Message("You logged successfully.", LocalDateTime.now(), 200);
             }
         }
@@ -144,7 +157,8 @@ public class UserService {
                     }
                 }).start();
 
-                user.get().setPassword(newPassword);
+                String cryptedPass = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+                user.get().setPassword(cryptedPass);
                 userRepository.save(user.get());
                 return new Message("Your new password is " + newPassword, LocalDateTime.now(), HttpStatus.OK.value());
             } else {
@@ -180,10 +194,13 @@ public class UserService {
 //    change user's password, only if it is logged in
     public Message updatePassword(ChangePasswordUserDTO pendingUser, User user) throws BaseException{
         if(userRepository.findById(user.getId()).isPresent()) {
-            if(user.getPassword().equals(pendingUser.getPassword()) && user.getUsername().equals(pendingUser.getUsername())) {
-                if(!user.getPassword().equals(pendingUser.getNewPassword())) {
+
+            if(BCrypt.checkpw(pendingUser.getPassword(), user.getPassword())
+                    && user.getUsername().equals(pendingUser.getUsername())) {
+                if(!BCrypt.checkpw(pendingUser.getNewPassword(), user.getPassword())) {
                     if (pendingUser.getNewPassword().length() >= 3) {
-                        user.setPassword(pendingUser.getNewPassword());
+                        String cryptedPass = BCrypt.hashpw(pendingUser.getNewPassword(), BCrypt.gensalt());
+                        user.setPassword(cryptedPass);
                         userRepository.save(user);
                         new Thread(()-> {
                             try {
