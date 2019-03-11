@@ -110,3 +110,10 @@ CREATE TABLE pets_in_order (
   FOREIGN KEY (user_id) REFERENCES users(id)
   );
   
+  CREATE TABLE products_favourites(
+  product_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  PRIMARY KEY(product_id, user_id),
+  FOREIGN KEY(product_id) REFERENCES products(id),
+  FOREIGN KEY(user_id) REFERENCES users(id)
+  );
