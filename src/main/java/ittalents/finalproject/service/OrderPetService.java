@@ -8,6 +8,7 @@ import ittalents.finalproject.model.pojos.pets.OrderedPet;
 import ittalents.finalproject.model.pojos.pets.Pet;
 import ittalents.finalproject.util.exceptions.BaseException;
 import ittalents.finalproject.util.exceptions.PetNotFoundException;
+import ittalents.finalproject.util.exceptions.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,10 @@ public class OrderPetService {
 
     @Transactional
     public Object makeOrder(FinalOrderPets order, HttpSession session) throws BaseException {
+        User user = (User)session.getAttribute(LOGGED_USER);
+        if(!user.isVerified()){
+            throw new UserNotFoundException("User's mail is not verified!");
+        }
         double finalPrice = 0;
         Enumeration<String> attr = session.getAttributeNames();
         while(attr.hasMoreElements()){
@@ -36,7 +41,6 @@ public class OrderPetService {
                 continue;
             }
             if(key.contains(PET_STR)) {
-                User user = (User)session.getAttribute(LOGGED_USER);
                 order.setUserId(user.getId());
                 order.setFinalPrice(finalPrice);
                 dao.insertOrder(order);
