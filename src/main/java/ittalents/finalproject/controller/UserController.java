@@ -38,7 +38,8 @@ public class UserController extends BaseController{
     }
 
     @GetMapping(value = "register/confirmed")
-    public Message confirmedEmail(HttpSession session){
+    public Message confirmedEmail(HttpSession session) throws BaseException{
+        validateLogin(session);
         User user = (User) session.getAttribute(LOGGED_USER);
         return userService.confirmEmail(user);
     }

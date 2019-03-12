@@ -230,24 +230,4 @@ public class ProductService {
             return null;
         }
     }
-    //!!!!
-//    public List<ListProduct> getAllproducts(){
-//        return this.productRepository.findAll().stream()
-//                .filter(product -> product.getProductId() != null)
-//                .map(product -> new ListProduct(product.getProductId(),
-//                        product.getTitle(),
-//                        product.getInformation()))
-//                .collect(Collectors.toList());
-//    }
-
-
-
-// mine - almost working
-//    public List<ProductReviewsDTO> getReviewsForAllProducts() {
-//        return productRepository.findAll().stream().map(product ->
-//                new ProductReviewsDTO(product.getId(), product.getName(), product.getCategory(),
-//                        product.getPrice(), product.getQuantity(),
-//                        product.getManifacturer(), product.getReviews()))
-//                .collect(Collectors.toList());
-//    }
 }
