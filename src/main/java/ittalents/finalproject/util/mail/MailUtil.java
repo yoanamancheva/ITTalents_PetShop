@@ -29,7 +29,7 @@ public class MailUtil {
 
     public static final String NEW_PROMOTIONS_PRODUCTS_CONTENT = "Hey, we have great new product promotions. " +
                                                                  "Check them here." +
-                                                                 "\n <a href=\"http://products/sort/price"+
+                                                                 "\n <a href=\"http://products/sort/price\">"+
                                                                  "click here </a>";;
     public static final String NEW_PROMOTIONS_SUBJECT = "New product promotions.";
 

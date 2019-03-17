@@ -86,7 +86,12 @@ public class UserController extends BaseController{
         return userService.unsubscribeFromNotifications(user);
     }
 
-
+    @GetMapping(value = "profile/subscribe")
+    public Message subscribe(HttpSession session) throws BaseException{
+        validateLogin(session);
+        User user = (User)session.getAttribute(LOGGED_USER);
+        return userService.subscribeFromNotifications(user);
+    }
 
     @GetMapping(value = "/crypt")
     public String getCrypt() {

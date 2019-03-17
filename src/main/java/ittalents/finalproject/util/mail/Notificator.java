@@ -2,6 +2,7 @@ package ittalents.finalproject.util.mail;
 
 import ittalents.finalproject.controller.BaseController;
 import ittalents.finalproject.model.pojos.User;
+import ittalents.finalproject.model.repos.UserRepository;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,29 +20,23 @@ public class Notificator extends BaseController {
     @Autowired
     private MailUtil mailUtil;
 
-    private List<User> users = new ArrayList<>();
-
-
-    public void addObserver(User user) {
-        this.users.add(user);
-    }
-
-    public void removeObserver(User user) {
-        this.users.remove(user);
-    }
+    @Autowired
+    private UserRepository userRepository;
 
     public void sendNews(String subject, String content) {
-        new Thread(() -> {
-        for (User user : this.users) {
+        List<User> users = userRepository.findAllByNotifications(true);
+        if(!users.isEmpty()) {
             new Thread(() -> {
-                try {
-                    mailUtil.sendmail(user.getEmail(), subject, content);
-                } catch (MessagingException e) {
-                    e.printStackTrace();
-                    log.error(e.getMessage());
+                for (User user : users) {
+                    try {
+                        mailUtil.sendmail(user.getEmail(), subject, content);
+                    } catch (MessagingException e) {
+                        e.printStackTrace();
+                        log.error(e.getMessage());
+                    }
                 }
             }).start();
-
-        }}).start();
+        }
     }
+
 }

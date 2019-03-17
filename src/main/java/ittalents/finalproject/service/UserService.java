@@ -29,7 +29,7 @@ import static ittalents.finalproject.controller.BaseController.LOGGED_USER;
 @Service
 public class UserService {
 
-    public static final int MIN_SYMBOLS = 7;
+    public static final int MIN_SYMBOLS = 8;
     @Autowired
     private Notificator notificator;
 
@@ -46,9 +46,6 @@ public class UserService {
     public UserDTO registerUser(User user, HttpSession session) throws BaseException {
 
         validateUserInput(user);
-        if (user.isNotifications()) {
-            notificator.addObserver(user);
-        }
         String cryptedPass = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
         user.setPassword(cryptedPass);
         user.setPassword2(cryptedPass);
@@ -238,7 +235,6 @@ public class UserService {
 
     public Message unsubscribeFromNotifications(User user) throws BaseException{
         if(user.isNotifications()) {
-            notificator.removeObserver(user);
             user.setNotifications(false);
             userRepository.save(user);
             return new Message("You successfully unsubscribed.", LocalDateTime.now(), HttpStatus.OK.value());
@@ -246,6 +242,18 @@ public class UserService {
         else {
             throw new UserNotFoundException("You are not subscribed.");
         }
+    }
+
+    public Message subscribeFromNotifications(User user) throws BaseException{
+        if(!user.isNotifications()) {
+            user.setNotifications(true);
+            userRepository.save(user);
+            return new Message("You successfully subscribed.", LocalDateTime.now(), HttpStatus.OK.value());
+        }
+        else {
+            throw new UserNotFoundException("You are subscribed already.");
+        }
+
     }
 //    validations ------------------------------------------------------------------------------------------------------
     private void validateUserInput( User user) throws BaseException {
@@ -261,8 +269,9 @@ public class UserService {
         else if( getUserByEmail(newEmail) != null) {
             throw new InvalidInputException("This email is already user by another user.");
         }
-        else if(user.getPassword().length() < MIN_SYMBOLS) {
-            throw new InvalidInputException("The password should be more than " + MIN_SYMBOLS + " symbols");
+        else if(!user.getPassword().matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$")) {
+            throw new InvalidInputException("The password should be more than " + MIN_SYMBOLS + " symbols, contains " +
+                                            " at least 1 digit, 1 upper case, 1 lower case, 1 special symbol.");
         }
         else if (!user.getPassword().equals(user.getPassword2()) ) {
             throw new InvalidInputException("The passwords don't match.");
@@ -305,4 +314,6 @@ public class UserService {
         }
         return null;
     }
+
+
 }
